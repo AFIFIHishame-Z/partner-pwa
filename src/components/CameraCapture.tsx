@@ -23,11 +23,19 @@ const CameraCapture = () => {
         });
 
       if (response.success && response.data) {
-        // Handle different response formats
+        // Handle different response formats - prioritize dataUrl over base64
         const imageData =
-          response.data.base64 || response.data.dataUrl || response.data.path;
+          response.data.dataUrl || response.data.base64 || response.data.path;
 
         if (imageData) {
+          console.log("Image data received:", {
+            hasDataUrl: !!response.data.dataUrl,
+            hasBase64: !!response.data.base64,
+            hasPath: !!response.data.path,
+            imageDataLength: imageData.length,
+            imageDataStart: imageData.substring(0, 50),
+          });
+
           setCapturedImage(imageData);
           setLastCaptureTime(new Date());
           console.log("Photo captured successfully:", response);
@@ -54,13 +62,24 @@ const CameraCapture = () => {
   };
 
   const formatImageSrc = (imageData: string) => {
+    console.log("Formatting image src:", {
+      imageDataLength: imageData.length,
+      imageDataStart: imageData.substring(0, 50),
+      startsWithData: imageData.startsWith("data:"),
+      startsWithSlash: imageData.startsWith("/"),
+      startsWithFile: imageData.startsWith("file://"),
+    });
+
     // Handle different image data formats
     if (imageData.startsWith("data:")) {
+      console.log("Using data URL directly");
       return imageData; // Already a data URL
     } else if (imageData.startsWith("/") || imageData.startsWith("file://")) {
+      console.log("Using file path");
       return imageData; // File path
     } else {
       // Assume base64 data
+      console.log("Converting base64 to data URL");
       return `data:image/jpeg;base64,${imageData}`;
     }
   };
@@ -188,7 +207,13 @@ const CameraCapture = () => {
               }}
               onError={(e) => {
                 console.error("Image load error:", e);
+                console.error("Image src:", formatImageSrc(capturedImage));
+                console.error("Original image data:", capturedImage);
                 setError("Failed to display captured image");
+              }}
+              onLoad={() => {
+                console.log("Image loaded successfully");
+                setError(null);
               }}
             />
           </div>
@@ -205,6 +230,8 @@ const CameraCapture = () => {
           )}
         </div>
       )}
+
+      {JSON.stringify(capturedImage)}
 
       <div
         style={{
