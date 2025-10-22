@@ -1,5 +1,7 @@
 import "./App.css";
 import CameraCapture from "./components/CameraCapture";
+import FrenchPhotoExercise from "./components/FrenchPhotoExercise";
+import FrenchVoiceExercise from "./components/FrenchVoiceExercise";
 
 function App() {
   return (
@@ -95,7 +97,9 @@ function App() {
         `}
       </style>
 
-      <CameraCapture />
+      {/* <CameraCapture /> */}
+      <FrenchPhotoExercise />
+      <FrenchVoiceExercise />
     </>
   );
 }

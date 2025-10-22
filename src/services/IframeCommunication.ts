@@ -20,6 +20,28 @@ export interface CameraResponse {
   error?: string;
 }
 
+export interface VoiceRequest {
+  type: "VOICE_REQUEST";
+  action: "start_recording" | "stop_recording";
+  options?: {
+    maxDuration?: number; // in seconds
+    audioFormat?: "mp3" | "wav" | "webm";
+    quality?: "low" | "medium" | "high";
+  };
+}
+
+export interface VoiceResponse {
+  type: "VOICE_RESPONSE";
+  success: boolean;
+  data?: {
+    audioBlob?: Blob;
+    audioUrl?: string;
+    duration?: number; // in seconds
+    format?: string;
+  };
+  error?: string;
+}
+
 export interface CommunicationMessage {
   type: string;
   [key: string]: any;
@@ -202,6 +224,79 @@ class IframeCommunicationService {
 
   public isCommunicationReady(): boolean {
     return this.isReady;
+  }
+
+  public requestVoiceRecord(
+    options?: VoiceRequest["options"]
+  ): Promise<VoiceResponse> {
+    return new Promise((resolve, reject) => {
+      const requestId = `voice_${Date.now()}_${Math.random()}`;
+      console.log(
+        "IframeCommunication: Starting voice request with ID:",
+        requestId
+      );
+
+      // Set up response handler
+      const responseHandler = (message: CommunicationMessage) => {
+        console.log(
+          "IframeCommunication: Received voice response message:",
+          message
+        );
+        console.log("IframeCommunication: Expected requestId:", requestId);
+        console.log(
+          "IframeCommunication: Received requestId:",
+          message.requestId
+        );
+
+        if (
+          message.type === "VOICE_RESPONSE" &&
+          message.requestId === requestId
+        ) {
+          console.log(
+            "IframeCommunication: Voice response matches request ID, resolving promise"
+          );
+          this.messageHandlers.delete(`VOICE_RESPONSE_${requestId}`);
+          resolve(message as VoiceResponse);
+        } else {
+          console.log(
+            "IframeCommunication: Voice response does not match request ID, ignoring"
+          );
+        }
+      };
+
+      this.messageHandlers.set(`VOICE_RESPONSE_${requestId}`, responseHandler);
+
+      // Send voice request to parent
+      const voiceRequest: VoiceRequest & { requestId: string } = {
+        type: "VOICE_REQUEST",
+        action: "start_recording",
+        requestId,
+        options: {
+          maxDuration: 60, // 60 seconds max
+          audioFormat: "webm",
+          quality: "medium",
+          ...options,
+        },
+      };
+
+      console.log(
+        "IframeCommunication: Sending voice request to parent:",
+        voiceRequest
+      );
+      this.sendMessageToParent(voiceRequest);
+
+      // Set timeout for request
+      setTimeout(() => {
+        if (this.messageHandlers.has(`VOICE_RESPONSE_${requestId}`)) {
+          console.error(
+            "IframeCommunication: Voice request timeout for ID:",
+            requestId
+          );
+          this.messageHandlers.delete(`VOICE_RESPONSE_${requestId}`);
+          reject(new Error("Voice request timeout"));
+        }
+      }, 120000); // 2 minute timeout for voice recording
+    });
   }
 }
 
