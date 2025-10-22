@@ -1,5 +1,4 @@
 import "./App.css";
-import CameraCapture from "./components/CameraCapture";
 import FrenchPhotoExercise from "./components/FrenchPhotoExercise";
 import FrenchVoiceExercise from "./components/FrenchVoiceExercise";
 

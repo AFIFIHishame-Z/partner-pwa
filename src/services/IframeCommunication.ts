@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Communication service for iframe to parent app communication
 export interface CameraRequest {
   type: "CAMERA_REQUEST";
