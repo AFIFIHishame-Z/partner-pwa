@@ -398,12 +398,12 @@ const Exercise1 = () => {
             <h3 className="text-lg font-semibold mb-4 text-center">
               Image Capturée
             </h3>
-            <div className="text-center">
+            <div className="text-center flex justify-center items-center">
               <img
                 src={capturedImage}
                 alt="Captured"
                 className="max-w-full h-auto rounded-lg shadow-lg"
-                style={{ maxHeight: "120px" }}
+                style={{ maxHeight: "140px" }}
               />
             </div>
             <div className="mt-4 flex gap-2">
