@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { iframeCommunication } from "../../services/IframeCommunication";
 
 const Exercise1 = () => {
   const [mathProblem, setMathProblem] = useState({
@@ -9,6 +10,9 @@ const Exercise1 = () => {
   });
   const [userInput, setUserInput] = useState("");
   const [speechSupported, setSpeechSupported] = useState(false);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [showImagePopup, setShowImagePopup] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
 
   useEffect(() => {
     generateRandomProblem();
@@ -52,6 +56,45 @@ const Exercise1 = () => {
       const userResult = userInput;
       const message = `L'opération est ${operationText}. Votre résultat est ${userResult}`;
       speakText(message);
+    }
+  };
+
+  const handleCameraClick = async () => {
+    try {
+      setIsCapturing(true);
+      console.log("📸 Starting camera capture...");
+
+      const response = await iframeCommunication.requestCameraCapture({
+        quality: 0.8,
+        allowEditing: false,
+        correctOrientation: true,
+      });
+
+      console.log("📸 Camera response received:", response);
+
+      if (response.success && response.data) {
+        const imageData = response.data.base64 || response.data.dataUrl;
+        if (imageData) {
+          setCapturedImage(imageData);
+          setShowImagePopup(true);
+          console.log("📸 Image captured and displayed successfully");
+        } else {
+          console.error("📸 No image data received");
+          alert("Erreur: Aucune image reçue");
+        }
+      } else {
+        console.error("📸 Camera capture failed:", response.error);
+        alert(`Erreur de capture: ${response.error || "Capture échouée"}`);
+      }
+    } catch (error) {
+      console.error("📸 Camera capture error:", error);
+      alert(
+        `Erreur de capture: ${
+          error instanceof Error ? error.message : "Erreur inconnue"
+        }`
+      );
+    } finally {
+      setIsCapturing(false);
     }
   };
 
@@ -201,13 +244,28 @@ const Exercise1 = () => {
       </div>
 
       {/* Icon in right middle */}
-      <div className="absolute top-1/2 right-4 transform -translate-y-1/2 z-10">
+      <div className="absolute top-1/2 right-4 transform -translate-y-1/2 z-10 flex flex-col gap-3">
         <img
           src="/media/icons/Layer_3.png"
           alt="Icon"
           onClick={handleVoiceClick}
           className="w-14 h-14 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-105 transition-transform"
         />
+        <div
+          className="w-14 h-14 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-105 transition-transform flex items-center justify-center bg-white/20 backdrop-blur-sm"
+          onClick={handleCameraClick}
+        >
+          <span
+            className="text-2xl"
+            style={{
+              fontSize: "2rem",
+              top: isCapturing ? "-3px" : "-7px",
+              position: "relative",
+            }}
+          >
+            {isCapturing ? "⏳" : "📸"}
+          </span>
+        </div>
       </div>
 
       {/* Icon in bottom right corner. */}
@@ -325,6 +383,50 @@ const Exercise1 = () => {
           </div>
         </div>
       </div>
+
+      {/* Image Popup */}
+      {showImagePopup && capturedImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 relative">
+            <button
+              onClick={() => setShowImagePopup(false)}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+            >
+              ×
+            </button>
+            <h3 className="text-lg font-semibold mb-4 text-center">
+              Image Capturée
+            </h3>
+            <div className="text-center">
+              <img
+                src={capturedImage}
+                alt="Captured"
+                className="max-w-full h-auto rounded-lg shadow-lg"
+                style={{ maxHeight: "400px" }}
+              />
+            </div>
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => setShowImagePopup(false)}
+                className="flex-1 bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition-colors"
+              >
+                Fermer
+              </button>
+              <button
+                onClick={() => {
+                  const link = document.createElement("a");
+                  link.href = capturedImage;
+                  link.download = `capture_${Date.now()}.jpg`;
+                  link.click();
+                }}
+                className="flex-1 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
+              >
+                Télécharger
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
