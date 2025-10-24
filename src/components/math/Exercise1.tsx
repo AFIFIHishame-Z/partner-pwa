@@ -403,7 +403,7 @@ const Exercise1 = () => {
                 src={capturedImage}
                 alt="Captured"
                 className="max-w-full h-auto rounded-lg shadow-lg"
-                style={{ maxHeight: "400px" }}
+                style={{ maxHeight: "80px" }}
               />
             </div>
             <div className="mt-4 flex gap-2">
