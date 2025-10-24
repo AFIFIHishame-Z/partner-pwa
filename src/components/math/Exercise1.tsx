@@ -403,27 +403,8 @@ const Exercise1 = () => {
                 src={capturedImage}
                 alt="Captured"
                 className="max-w-full h-auto rounded-lg shadow-lg"
-                style={{ maxHeight: "140px" }}
+                style={{ maxHeight: "160px" }}
               />
-            </div>
-            <div className="mt-4 flex gap-2">
-              <button
-                onClick={() => setShowImagePopup(false)}
-                className="flex-1 bg-gray-500 text-white py-2 px-4 rounded hover:bg-gray-600 transition-colors"
-              >
-                Fermer
-              </button>
-              <button
-                onClick={() => {
-                  const link = document.createElement("a");
-                  link.href = capturedImage;
-                  link.download = `capture_${Date.now()}.jpg`;
-                  link.click();
-                }}
-                className="flex-1 bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
-              >
-                Télécharger
-              </button>
             </div>
           </div>
         </div>
