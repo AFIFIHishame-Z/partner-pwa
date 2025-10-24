@@ -300,14 +300,30 @@ const Exercise1 = () => {
               <div className="w-32 h-0.5 bg-gray-400 mb-4"></div>
             </div>
 
-            {/* Input field */}
-            <input
-              type="text"
-              value={userInput}
-              onChange={(e) => setUserInput(e.target.value)}
-              placeholder="Entrez le résultat"
-              className="w-48 h-12 px-4 text-center text-lg bg-white/90 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none placeholder-gray-500"
-            />
+            {/* Input field with clear button */}
+            <div className="relative w-48">
+              <input
+                type="text"
+                value={userInput}
+                onChange={(e) => setUserInput(e.target.value)}
+                placeholder="Entrez le résultat"
+                className="w-full h-12 px-4 pr-12 text-center text-lg bg-white/90 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none placeholder-gray-500"
+              />
+              {userInput && (
+                <button
+                  onClick={() => setUserInput("")}
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-red-400 text-white rounded-full hover:bg-red-600 transition-colors flex items-center justify-center font-bold"
+                  style={{
+                    width: "1.5rem",
+                    height: "1.5rem",
+                    fontSize: "0.8rem",
+                  }}
+                  title="Effacer"
+                >
+                  ×
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
