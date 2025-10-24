@@ -58,7 +58,7 @@
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
+          "value": "no-cache, no-store, must-revalidate, max-age=0"
         },
         {
           "key": "Pragma",
@@ -67,6 +67,10 @@
         {
           "key": "Expires",
           "value": "0"
+        },
+        {
+          "key": "Last-Modified",
+          "value": "Thu, 01 Jan 1970 00:00:00 GMT"
         }
       ]
     },
