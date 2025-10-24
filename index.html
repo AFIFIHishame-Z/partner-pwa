@@ -32,9 +32,17 @@
     <link rel="icon" type="image/svg+xml" href="/icons/icon-192x192.svg" />
 
     <title>Partner App</title>
+    <!-- Build timestamp for cache busting -->
+    <meta name="build-timestamp" content="<!-- BUILD_TIMESTAMP -->" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Register service worker for cache busting
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.register("/sw-cache-bust.js");
+      }
+    </script>
   </body>
 </html>
