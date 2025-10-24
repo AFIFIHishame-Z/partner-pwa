@@ -25,4 +25,10 @@ export default defineConfig({
     // Enable host access for PWA testing
     host: true,
   },
+  // Ensure proper MIME types for assets
+  define: {
+    "process.env.NODE_ENV": JSON.stringify(
+      process.env.NODE_ENV || "production"
+    ),
+  },
 });
