@@ -118,6 +118,17 @@
         <button class="button" onclick="simulateCameraError()">
           ❌ Simulate Error
         </button>
+      </div>
+
+      <div class="status-panel">
+        <h3>Simulated Voice Recording Response</h3>
+        <p>
+          This simulator will respond to voice recording requests with mock
+          audio.
+        </p>
+        <button class="button" onclick="simulateVoiceRecordingComplete()">
+          🎤 Simulate Voice Complete
+        </button>
         <button class="button" onclick="clearLogs()">🗑️ Clear Logs</button>
       </div>
 
@@ -154,6 +165,9 @@
               case "CAMERA_REQUEST":
                 this.handleCameraRequest(event);
                 break;
+              case "VOICE_REQUEST":
+                this.handleVoiceRequest(event);
+                break;
               default:
                 this.log(`❓ Unknown message type: ${event.data.type}`);
             }
@@ -182,6 +196,30 @@
           }, 1000);
         }
 
+        async handleVoiceRequest(event) {
+          this.log("🎤 Handling voice request:", event.data);
+          console.log("🎤 Parent: Received voice request:", event.data);
+
+          if (event.data.action === "start_recording") {
+            this.log("🎤 Starting voice recording simulation");
+            console.log("🎤 Parent: Starting voice recording simulation");
+            // Simulate starting voice recording
+            setTimeout(() => {
+              this.simulateVoiceRecordingStart(event.source, event.data);
+            }, 500);
+          } else if (event.data.action === "stop_recording") {
+            this.log("🎤 Stopping voice recording simulation");
+            console.log("🎤 Parent: Stopping voice recording simulation");
+            // Simulate stopping voice recording and returning audio
+            setTimeout(() => {
+              this.simulateVoiceRecordingComplete(event.source, event.data);
+            }, 1000);
+          } else {
+            this.log("🎤 Unknown voice action:", event.data.action);
+            console.log("🎤 Parent: Unknown voice action:", event.data.action);
+          }
+        }
+
         simulateCameraResponse(iframeWindow, request) {
           // Create a mock image (1x1 pixel red image)
           const mockImageData =
@@ -203,10 +241,91 @@
           this.log("📤 Sent camera response:", response);
         }
 
-        sendMessageToIframe(iframeWindow, message) {
+        simulateVoiceRecordingStart(iframeWindow, request) {
+          const response = {
+            type: "VOICE_RESPONSE",
+            requestId: request.requestId,
+            success: true,
+            data: {
+              status: "recording_started",
+              message: "Voice recording started successfully",
+            },
+          };
+
+          console.log(
+            "🎤 Parent: Sending voice recording start response:",
+            response
+          );
+          this.sendMessageToIframe(iframeWindow, response);
+          this.log("📤 Sent voice recording start response:", response);
+        }
+
+        simulateVoiceRecordingComplete(iframeWindow, request) {
+          // Create a more realistic mock audio data URL (3-second silent audio)
+          const mockAudioData =
+            "data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=";
+
+          const response = {
+            type: "VOICE_RECORDING_COMPLETE",
+            success: true,
+            data: {
+              audioUrl: mockAudioData,
+              duration: 3.0,
+              format: "wav",
+              size: 1024,
+            },
+          };
+
+          console.log(
+            "🎤 Parent: Sending voice recording complete response:",
+            response
+          );
+          console.log("🎤 Parent: Iframe window:", iframeWindow);
+          console.log(
+            "🎤 Parent: PostMessage available:",
+            iframeWindow && iframeWindow.postMessage
+          );
+
+          this.sendMessageToIframe(iframeWindow, response);
+          this.log("📤 Sent voice recording complete response:", response);
+
+          // Also try sending directly to test
           if (iframeWindow && iframeWindow.postMessage) {
-            iframeWindow.postMessage(message, "*");
-            this.log("📤 Sent message to iframe:", message);
+            console.log("🎤 Parent: Sending direct message to iframe");
+            iframeWindow.postMessage(response, "*");
+          }
+        }
+
+        sendMessageToIframe(iframeWindow, message) {
+          console.log(
+            "🎤 Parent: Attempting to send message to iframe:",
+            message
+          );
+          console.log("🎤 Parent: Iframe window:", iframeWindow);
+          console.log(
+            "🎤 Parent: PostMessage function:",
+            iframeWindow && iframeWindow.postMessage
+          );
+
+          if (iframeWindow && iframeWindow.postMessage) {
+            try {
+              iframeWindow.postMessage(message, "*");
+              console.log("🎤 Parent: Message sent successfully to iframe");
+              this.log("📤 Sent message to iframe:", message);
+            } catch (error) {
+              console.error(
+                "🎤 Parent: Error sending message to iframe:",
+                error
+              );
+              this.log("❌ Error sending message to iframe:", error);
+            }
+          } else {
+            console.error(
+              "🎤 Parent: Cannot send message - iframe window or postMessage not available"
+            );
+            this.log(
+              "❌ Cannot send message - iframe window or postMessage not available"
+            );
           }
         }
 
@@ -239,6 +358,18 @@
       function simulateCameraError() {
         simulator.log("🧪 Simulating camera error...");
         // This would normally be triggered by the iframe
+      }
+
+      function simulateVoiceRecordingComplete() {
+        simulator.log("🧪 Manually simulating voice recording completion...");
+        const iframe = document.getElementById("child-app-iframe");
+        if (iframe && iframe.contentWindow) {
+          simulator.simulateVoiceRecordingComplete(iframe.contentWindow, {
+            requestId: "manual_test_" + Date.now(),
+          });
+        } else {
+          simulator.log("❌ Iframe not found or not ready");
+        }
       }
 
       function clearLogs() {

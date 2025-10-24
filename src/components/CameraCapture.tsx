@@ -87,600 +87,149 @@ const CameraCapture = () => {
   return (
     <div
       style={{
-        minHeight: "100vh",
-        background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        fontFamily:
-          "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
         padding: "20px",
+        maxWidth: "600px",
+        margin: "0 auto",
+        fontFamily: "Arial, sans-serif",
       }}
     >
-      {/* Camera Capture Section */}
+      <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
+        📸 Camera Test - Iframe Communication
+      </h2>
+
       <div
         style={{
-          background: "rgba(255, 255, 255, 0.95)",
-          borderRadius: "16px",
-          padding: "30px",
+          backgroundColor: "#f5f5f5",
+          padding: "20px",
+          borderRadius: "8px",
           marginBottom: "20px",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-          backdropFilter: "blur(10px)",
         }}
       >
-        <h2
-          style={{
-            margin: "0 0 20px 0",
-            color: "#495057",
-            fontSize: "1.8rem",
-            fontWeight: "700",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-          }}
-        >
-          📸 Camera Capture
-        </h2>
+        <h3>Communication Status</h3>
+        <p>
+          <strong>Ready:</strong>{" "}
+          {iframeCommunication.isCommunicationReady() ? "✅ Yes" : "❌ No"}
+        </p>
+        <p>
+          <strong>Parent Window:</strong>{" "}
+          {window.parent !== window ? "✅ Detected" : "❌ Not found"}
+        </p>
+      </div>
 
-        {/* Communication Status */}
-        <div
-          style={{
-            background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
-            padding: "20px",
-            borderRadius: "12px",
-            marginBottom: "30px",
-            border: "1px solid #dee2e6",
-          }}
-        >
-          <h3
+      <div style={{ textAlign: "center", marginBottom: "20px" }}>
+        {!capturedImage ? (
+          <button
+            onClick={handleCapturePhoto}
+            disabled={isLoading}
             style={{
-              margin: "0 0 15px 0",
-              color: "#495057",
-              fontSize: "1.3rem",
+              backgroundColor: isLoading ? "#ccc" : "#007bff",
+              color: "white",
+              border: "none",
+              padding: "12px 24px",
+              borderRadius: "6px",
+              fontSize: "16px",
+              cursor: isLoading ? "not-allowed" : "pointer",
+              minWidth: "150px",
             }}
           >
-            🔗 Communication Status
-          </h3>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "15px",
-            }}
-          >
-            <div
-              style={{
-                padding: "12px",
-                background: iframeCommunication.isCommunicationReady()
-                  ? "rgba(40, 167, 69, 0.1)"
-                  : "rgba(220, 53, 69, 0.1)",
-                borderRadius: "8px",
-                border: `1px solid ${
-                  iframeCommunication.isCommunicationReady()
-                    ? "rgba(40, 167, 69, 0.3)"
-                    : "rgba(220, 53, 69, 0.3)"
-                }`,
-              }}
-            >
-              <strong style={{ color: "#495057" }}>Ready:</strong>{" "}
-              <span
-                style={{
-                  color: iframeCommunication.isCommunicationReady()
-                    ? "#28a745"
-                    : "#dc3545",
-                  fontWeight: "600",
-                }}
-              >
-                {iframeCommunication.isCommunicationReady()
-                  ? "✅ Yes"
-                  : "❌ No"}
-              </span>
-            </div>
-            <div
-              style={{
-                padding: "12px",
-                background:
-                  window.parent !== window
-                    ? "rgba(40, 167, 69, 0.1)"
-                    : "rgba(220, 53, 69, 0.1)",
-                borderRadius: "8px",
-                border: `1px solid ${
-                  window.parent !== window
-                    ? "rgba(40, 167, 69, 0.3)"
-                    : "rgba(220, 53, 69, 0.3)"
-                }`,
-              }}
-            >
-              <strong style={{ color: "#495057" }}>Parent Window:</strong>{" "}
-              <span
-                style={{
-                  color: window.parent !== window ? "#28a745" : "#dc3545",
-                  fontWeight: "600",
-                }}
-              >
-                {window.parent !== window ? "✅ Detected" : "❌ Not found"}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Camera Controls */}
-        <div style={{ textAlign: "center", marginBottom: "30px" }}>
-          {!capturedImage ? (
+            {isLoading ? "⏳ Capturing..." : "📸 Capture Photo"}
+          </button>
+        ) : (
+          <div>
             <button
               onClick={handleCapturePhoto}
               disabled={isLoading}
               style={{
-                background: isLoading
-                  ? "linear-gradient(135deg, #ccc 0%, #999 100%)"
-                  : "linear-gradient(135deg, #007bff 0%, #0056b3 100%)",
+                backgroundColor: isLoading ? "#ccc" : "#28a745",
                 color: "white",
                 border: "none",
-                padding: "16px 32px",
-                borderRadius: "12px",
-                fontSize: "18px",
-                fontWeight: "600",
+                padding: "12px 24px",
+                borderRadius: "6px",
+                fontSize: "16px",
                 cursor: isLoading ? "not-allowed" : "pointer",
-                minWidth: "200px",
-                boxShadow: isLoading
-                  ? "none"
-                  : "0 4px 15px rgba(0, 123, 255, 0.3)",
-                transition: "all 0.3s ease",
+                marginRight: "10px",
               }}
             >
-              {isLoading ? "⏳ Capturing..." : "📸 Capture Photo"}
+              {isLoading ? "⏳ Capturing..." : "📸 Take Another"}
             </button>
-          ) : (
-            <div
+            <button
+              onClick={handleRetakePhoto}
               style={{
-                display: "flex",
-                gap: "15px",
-                justifyContent: "center",
-                flexWrap: "wrap",
+                backgroundColor: "#dc3545",
+                color: "white",
+                border: "none",
+                padding: "12px 24px",
+                borderRadius: "6px",
+                fontSize: "16px",
+                cursor: "pointer",
               }}
             >
-              <button
-                onClick={handleCapturePhoto}
-                disabled={isLoading}
-                style={{
-                  background: isLoading
-                    ? "linear-gradient(135deg, #ccc 0%, #999 100%)"
-                    : "linear-gradient(135deg, #28a745 0%, #1e7e34 100%)",
-                  color: "white",
-                  border: "none",
-                  padding: "16px 32px",
-                  borderRadius: "12px",
-                  fontSize: "18px",
-                  fontWeight: "600",
-                  cursor: isLoading ? "not-allowed" : "pointer",
-                  boxShadow: isLoading
-                    ? "none"
-                    : "0 4px 15px rgba(40, 167, 69, 0.3)",
-                  transition: "all 0.3s ease",
-                }}
-              >
-                {isLoading ? "⏳ Capturing..." : "📸 Take Another"}
-              </button>
-              <button
-                onClick={handleRetakePhoto}
-                style={{
-                  background:
-                    "linear-gradient(135deg, #dc3545 0%, #c82333 100%)",
-                  color: "white",
-                  border: "none",
-                  padding: "16px 32px",
-                  borderRadius: "12px",
-                  fontSize: "18px",
-                  fontWeight: "600",
-                  cursor: "pointer",
-                  boxShadow: "0 4px 15px rgba(220, 53, 69, 0.3)",
-                  transition: "all 0.3s ease",
-                }}
-              >
-                🗑️ Clear
-              </button>
-            </div>
-          )}
-        </div>
+              🗑️ Clear
+            </button>
+          </div>
+        )}
+      </div>
 
-        {/* Error Display */}
-        {error && (
+      {error && (
+        <div
+          style={{
+            backgroundColor: "#f8d7da",
+            color: "#721c24",
+            padding: "12px",
+            borderRadius: "6px",
+            marginBottom: "20px",
+            border: "1px solid #f5c6cb",
+          }}
+        >
+          <strong>Error:</strong> {error}
+        </div>
+      )}
+
+      {capturedImage && (
+        <div style={{ textAlign: "center" }}>
+          <h3>Captured Photo</h3>
           <div
             style={{
-              background: "linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%)",
-              color: "#721c24",
-              padding: "16px",
-              borderRadius: "12px",
-              marginBottom: "30px",
-              border: "1px solid #f5c6cb",
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
+              border: "2px solid #007bff",
+              borderRadius: "8px",
+              padding: "10px",
+              backgroundColor: "white",
+              display: "inline-block",
             }}
           >
-            <span style={{ fontSize: "20px" }}>⚠️</span>
-            <div>
-              <strong>Error:</strong> {error}
-            </div>
-          </div>
-        )}
-
-        {/* Captured Image */}
-        {capturedImage && (
-          <div style={{ textAlign: "center" }}>
-            <h3
+            <img
+              src={formatImageSrc(capturedImage)}
+              alt="Captured photo"
               style={{
-                marginBottom: "20px",
-                color: "#495057",
-                fontSize: "1.5rem",
-                fontWeight: "600",
+                maxWidth: "100%",
+                maxHeight: "400px",
+                borderRadius: "4px",
+              }}
+              onError={(e) => {
+                console.error("Image load error:", e);
+                console.error("Image src:", formatImageSrc(capturedImage));
+                console.error("Original image data:", capturedImage);
+                setError("Failed to display captured image");
+              }}
+              onLoad={() => {
+                console.log("Image loaded successfully");
+                setError(null);
+              }}
+            />
+          </div>
+          {lastCaptureTime && (
+            <p
+              style={{
+                marginTop: "10px",
+                color: "#666",
+                fontSize: "14px",
               }}
             >
-              📷 Captured Photo
-            </h3>
-            <div
-              style={{
-                border: "3px solid #007bff",
-                borderRadius: "16px",
-                padding: "20px",
-                background: "white",
-                display: "inline-block",
-                boxShadow: "0 8px 32px rgba(0, 123, 255, 0.2)",
-              }}
-            >
-              <img
-                src={formatImageSrc(capturedImage)}
-                alt="Captured photo"
-                style={{
-                  maxWidth: "100%",
-                  maxHeight: "500px",
-                  borderRadius: "12px",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
-                }}
-                onError={(e) => {
-                  console.error("Image load error:", e);
-                  setError("Failed to display captured image");
-                }}
-                onLoad={() => {
-                  console.log("Image loaded successfully");
-                  setError(null);
-                }}
-              />
-            </div>
-            {lastCaptureTime && (
-              <p
-                style={{
-                  marginTop: "15px",
-                  color: "#6c757d",
-                  fontSize: "16px",
-                  fontWeight: "500",
-                }}
-              >
-                📅 Captured at: {lastCaptureTime.toLocaleString()}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* Access Vocal Section */}
-      <div
-        style={{
-          background: "rgba(255, 255, 255, 0.95)",
-          borderRadius: "16px",
-          padding: "30px",
-          marginBottom: "20px",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-          backdropFilter: "blur(10px)",
-        }}
-      >
-        <h2
-          style={{
-            margin: "0 0 20px 0",
-            color: "#495057",
-            fontSize: "1.8rem",
-            fontWeight: "700",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-          }}
-        >
-          🎤 Access Vocal
-        </h2>
-        <p style={{ color: "#6c757d", marginBottom: "20px" }}>
-          Voice recognition and speech-to-text functionality
-        </p>
-        <button
-          disabled
-          style={{
-            background: "linear-gradient(135deg, #ccc 0%, #999 100%)",
-            color: "#666",
-            border: "none",
-            padding: "12px 24px",
-            borderRadius: "8px",
-            fontSize: "16px",
-            fontWeight: "600",
-            cursor: "not-allowed",
-            boxShadow: "none",
-            opacity: 0.6,
-          }}
-        >
-          🎤 Start Voice Recording (Disabled)
-        </button>
-      </div>
-
-      {/* Geolocation Section */}
-      <div
-        style={{
-          background: "rgba(255, 255, 255, 0.95)",
-          borderRadius: "16px",
-          padding: "30px",
-          marginBottom: "20px",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-          backdropFilter: "blur(10px)",
-        }}
-      >
-        <h2
-          style={{
-            margin: "0 0 20px 0",
-            color: "#495057",
-            fontSize: "1.8rem",
-            fontWeight: "700",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-          }}
-        >
-          📍 Geolocation
-        </h2>
-        <p style={{ color: "#6c757d", marginBottom: "20px" }}>
-          GPS location services and mapping functionality
-        </p>
-        <button
-          disabled
-          style={{
-            background: "linear-gradient(135deg, #ccc 0%, #999 100%)",
-            color: "#666",
-            border: "none",
-            padding: "12px 24px",
-            borderRadius: "8px",
-            fontSize: "16px",
-            fontWeight: "600",
-            cursor: "not-allowed",
-            boxShadow: "none",
-            opacity: 0.6,
-          }}
-        >
-          📍 Get Current Location (Disabled)
-        </button>
-      </div>
-
-      {/* Notifications Section */}
-      <div
-        style={{
-          background: "rgba(255, 255, 255, 0.95)",
-          borderRadius: "16px",
-          padding: "30px",
-          marginBottom: "20px",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-          backdropFilter: "blur(10px)",
-        }}
-      >
-        <h2
-          style={{
-            margin: "0 0 20px 0",
-            color: "#495057",
-            fontSize: "1.8rem",
-            fontWeight: "700",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-          }}
-        >
-          🔔 Notifications
-        </h2>
-        <p style={{ color: "#6c757d", marginBottom: "20px" }}>
-          Push notifications and alert management
-        </p>
-        <button
-          disabled
-          style={{
-            background: "linear-gradient(135deg, #ccc 0%, #999 100%)",
-            color: "#666",
-            border: "none",
-            padding: "12px 24px",
-            borderRadius: "8px",
-            fontSize: "16px",
-            fontWeight: "600",
-            cursor: "not-allowed",
-            boxShadow: "none",
-            opacity: 0.6,
-          }}
-        >
-          🔔 Request Notification Permission (Disabled)
-        </button>
-      </div>
-
-      {/* Filesystem Section */}
-      <div
-        style={{
-          background: "rgba(255, 255, 255, 0.95)",
-          borderRadius: "16px",
-          padding: "30px",
-          marginBottom: "20px",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-          backdropFilter: "blur(10px)",
-        }}
-      >
-        <h2
-          style={{
-            margin: "0 0 20px 0",
-            color: "#495057",
-            fontSize: "1.8rem",
-            fontWeight: "700",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-          }}
-        >
-          📁 Filesystem
-        </h2>
-        <p style={{ color: "#6c757d", marginBottom: "20px" }}>
-          File system access and document management
-        </p>
-        <button
-          disabled
-          style={{
-            background: "linear-gradient(135deg, #ccc 0%, #999 100%)",
-            color: "#666",
-            border: "none",
-            padding: "12px 24px",
-            borderRadius: "8px",
-            fontSize: "16px",
-            fontWeight: "600",
-            cursor: "not-allowed",
-            boxShadow: "none",
-            opacity: 0.6,
-          }}
-        >
-          📁 Open File Browser (Disabled)
-        </button>
-      </div>
-
-      {/* Storage Section */}
-      <div
-        style={{
-          background: "rgba(255, 255, 255, 0.95)",
-          borderRadius: "16px",
-          padding: "30px",
-          marginBottom: "20px",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-          backdropFilter: "blur(10px)",
-        }}
-      >
-        <h2
-          style={{
-            margin: "0 0 20px 0",
-            color: "#495057",
-            fontSize: "1.8rem",
-            fontWeight: "700",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-          }}
-        >
-          💾 Storage
-        </h2>
-        <p style={{ color: "#6c757d", marginBottom: "20px" }}>
-          Local storage and data persistence
-        </p>
-        <button
-          disabled
-          style={{
-            background: "linear-gradient(135deg, #ccc 0%, #999 100%)",
-            color: "#666",
-            border: "none",
-            padding: "12px 24px",
-            borderRadius: "8px",
-            fontSize: "16px",
-            fontWeight: "600",
-            cursor: "not-allowed",
-            boxShadow: "none",
-            opacity: 0.6,
-          }}
-        >
-          💾 Test Storage (Disabled)
-        </button>
-      </div>
-
-      {/* Keyboard Section */}
-      <div
-        style={{
-          background: "rgba(255, 255, 255, 0.95)",
-          borderRadius: "16px",
-          padding: "30px",
-          marginBottom: "20px",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-          backdropFilter: "blur(10px)",
-        }}
-      >
-        <h2
-          style={{
-            margin: "0 0 20px 0",
-            color: "#495057",
-            fontSize: "1.8rem",
-            fontWeight: "700",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-          }}
-        >
-          ⌨️ Keyboard
-        </h2>
-        <p style={{ color: "#6c757d", marginBottom: "20px" }}>
-          Virtual keyboard and input management
-        </p>
-        <button
-          disabled
-          style={{
-            background: "linear-gradient(135deg, #ccc 0%, #999 100%)",
-            color: "#666",
-            border: "none",
-            padding: "12px 24px",
-            borderRadius: "8px",
-            fontSize: "16px",
-            fontWeight: "600",
-            cursor: "not-allowed",
-            boxShadow: "none",
-            opacity: 0.6,
-          }}
-        >
-          ⌨️ Show Virtual Keyboard (Disabled)
-        </button>
-      </div>
-
-      {/* Background Tasks Section */}
-      <div
-        style={{
-          background: "rgba(255, 255, 255, 0.95)",
-          borderRadius: "16px",
-          padding: "30px",
-          marginBottom: "20px",
-          boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-          backdropFilter: "blur(10px)",
-        }}
-      >
-        <h2
-          style={{
-            margin: "0 0 20px 0",
-            color: "#495057",
-            fontSize: "1.8rem",
-            fontWeight: "700",
-            display: "flex",
-            alignItems: "center",
-            gap: "10px",
-          }}
-        >
-          ⚙️ Background Tasks (Limited)
-        </h2>
-        <p style={{ color: "#6c757d", marginBottom: "20px" }}>
-          Background processing and task management
-        </p>
-        <button
-          disabled
-          style={{
-            background: "linear-gradient(135deg, #ccc 0%, #999 100%)",
-            color: "#666",
-            border: "none",
-            padding: "12px 24px",
-            borderRadius: "8px",
-            fontSize: "16px",
-            fontWeight: "600",
-            cursor: "not-allowed",
-            boxShadow: "none",
-            opacity: 0.6,
-          }}
-        >
-          ⚙️ Start Background Task (Disabled)
-        </button>
-      </div>
+              Captured at: {lastCaptureTime.toLocaleString()}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

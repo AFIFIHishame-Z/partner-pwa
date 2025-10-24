@@ -87,6 +87,57 @@ class IframeCommunicationService {
         }
       }
 
+      // Check for voice response handler
+      if (message.type === "VOICE_RESPONSE" && message.requestId) {
+        const specificHandlerKey = `VOICE_RESPONSE_${message.requestId}`;
+        if (this.messageHandlers.has(specificHandlerKey)) {
+          console.log(
+            "IframeCommunication: Found specific voice handler for request ID:",
+            message.requestId
+          );
+          const handler = this.messageHandlers.get(specificHandlerKey);
+          if (handler) {
+            handler(message);
+            return;
+          }
+        }
+      }
+
+      // Check for voice recording complete handler
+      if (message.type === "VOICE_RECORDING_COMPLETE") {
+        console.log(
+          "🎤 IframeCommunication: Received VOICE_RECORDING_COMPLETE message:",
+          message
+        );
+        console.log("🎤 IframeCommunication: Message data:", message.data);
+        console.log(
+          "🎤 IframeCommunication: Message success:",
+          message.success
+        );
+
+        if (this.messageHandlers.has("VOICE_RECORDING_COMPLETE")) {
+          console.log(
+            "🎤 IframeCommunication: Found voice recording complete handler"
+          );
+          const handler = this.messageHandlers.get("VOICE_RECORDING_COMPLETE");
+          if (handler) {
+            console.log(
+              "🎤 IframeCommunication: Calling voice recording complete handler"
+            );
+            handler(message);
+            return;
+          }
+        } else {
+          console.log(
+            "🎤 IframeCommunication: No voice recording complete handler found"
+          );
+          console.log(
+            "🎤 IframeCommunication: Available handlers:",
+            Array.from(this.messageHandlers.keys())
+          );
+        }
+      }
+
       // Check for general handler
       if (message.type && this.messageHandlers.has(message.type)) {
         console.log(
@@ -298,6 +349,14 @@ class IframeCommunicationService {
         }
       }, 120000); // 2 minute timeout for voice recording
     });
+  }
+
+  public onVoiceRecordingComplete(handler: (response: VoiceResponse) => void) {
+    this.messageHandlers.set("VOICE_RECORDING_COMPLETE", handler);
+  }
+
+  public removeVoiceRecordingHandler() {
+    this.messageHandlers.delete("VOICE_RECORDING_COMPLETE");
   }
 }
 

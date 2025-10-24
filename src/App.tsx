@@ -1,11 +1,11 @@
 import "./App.css";
-import FrenchPhotoExercise from "./components/FrenchPhotoExercise";
-import FrenchVoiceExercise from "./components/FrenchVoiceExercise";
+import Exercise1 from "./components/math/Exercise1";
 
 function App() {
   return (
     <>
-      <div
+      <Exercise1 />
+      {/* <div
         style={{
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
           padding: "30px 0",
@@ -15,7 +15,6 @@ function App() {
           overflow: "hidden",
         }}
       >
-        {/* Background decoration */}
         <div
           style={{
             position: "absolute",
@@ -60,7 +59,6 @@ function App() {
           Testing multiple functionalities in a modern interface
         </p>
 
-        {/* Decorative elements */}
         <div
           style={{
             position: "absolute",
@@ -94,11 +92,11 @@ function App() {
             50% { transform: translateY(-20px) rotate(180deg); }
           }
         `}
-      </style>
+      </style> */}
 
-      {/* <CameraCapture /> */}
+      {/* <Quiz />
       <FrenchPhotoExercise />
-      <FrenchVoiceExercise />
+      <FrenchVoiceExercise /> */}
     </>
   );
 }
