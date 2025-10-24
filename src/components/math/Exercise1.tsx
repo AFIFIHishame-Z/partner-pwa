@@ -114,7 +114,7 @@ const Exercise1 = () => {
         />
       </div>
 
-      {/* Icon in bottom right corner */}
+      {/* Icon in bottom right corner. */}
       <div className="absolute bottom-4 right-4 z-10">
         <img
           src="/media/icons/Frame 408.png"
