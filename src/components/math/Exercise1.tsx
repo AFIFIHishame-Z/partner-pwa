@@ -73,7 +73,8 @@ const Exercise1 = () => {
       console.log("📸 Camera response received:", response);
 
       if (response.success && response.data) {
-        const imageData = response.data.base64 || response.data.dataUrl;
+        const imageData =
+          response.data.dataUrl || response.data.base64 || response.data.path;
         if (imageData) {
           setCapturedImage(imageData);
           setShowImagePopup(true);
