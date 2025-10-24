@@ -8,10 +8,24 @@ const Exercise1 = () => {
     answer: 0,
   });
   const [userInput, setUserInput] = useState("");
+  const [speechSupported, setSpeechSupported] = useState(false);
 
   useEffect(() => {
     generateRandomProblem();
+    checkSpeechSupport();
   }, []);
+
+  const checkSpeechSupport = () => {
+    // Check if speech synthesis is available
+    const supported = "speechSynthesis" in window;
+    setSpeechSupported(supported);
+
+    if (supported) {
+      console.log("Speech synthesis is supported");
+    } else {
+      console.log("Speech synthesis not supported, using fallback methods");
+    }
+  };
 
   const generateRandomProblem = () => {
     const num1 = Math.floor(Math.random() * 50) + 10;
@@ -27,6 +41,7 @@ const Exercise1 = () => {
   };
 
   const handleVoiceClick = () => {
+    // Ensure user interaction for iframe speech compatibility
     if (!userInput.trim()) {
       // No result entered - ask user to create result
       const message = "Veuillez entrer le résultat de l'opération";
@@ -41,12 +56,93 @@ const Exercise1 = () => {
   };
 
   const speakText = (text: string) => {
-    if ("speechSynthesis" in window) {
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = "fr-FR"; // French language
-      utterance.rate = 0.8; // Slightly slower for clarity
-      speechSynthesis.speak(utterance);
+    // Try multiple approaches for iframe/PWA compatibility
+    try {
+      // Method 1: Direct speech synthesis (works in most browsers)
+      if (speechSupported && "speechSynthesis" in window) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "fr-FR";
+        utterance.rate = 0.8;
+        utterance.volume = 1.0;
+
+        // Add error handling
+        utterance.onerror = (event) => {
+          console.warn("Speech synthesis failed:", event);
+          // Fallback to parent window communication
+          sendToParentWindow(text);
+        };
+
+        utterance.onstart = () => {
+          console.log("Speech started");
+        };
+
+        speechSynthesis.speak(utterance);
+        return;
+      }
+    } catch (error) {
+      console.warn("Speech synthesis error:", error);
     }
+
+    // Method 2: Try to communicate with parent window (for iframe context)
+    sendToParentWindow(text);
+  };
+
+  const sendToParentWindow = (text: string) => {
+    try {
+      // Check if we're in an iframe
+      if (window.parent !== window) {
+        // Send message to parent window
+        window.parent.postMessage(
+          {
+            type: "SPEAK_TEXT",
+            text: text,
+            language: "fr-FR",
+            rate: 0.8,
+          },
+          "*"
+        );
+
+        console.log("Sent speech request to parent window:", text);
+        return;
+      }
+    } catch (error) {
+      console.warn("Failed to communicate with parent window:", error);
+    }
+
+    // Method 3: Fallback - show text in console or alert
+    console.log("Speech text (fallback):", text);
+
+    // Optional: Show a visual indicator that speech was requested
+    showSpeechIndicator(text);
+  };
+
+  const showSpeechIndicator = (text: string) => {
+    // Create a temporary visual indicator
+    const indicator = document.createElement("div");
+    indicator.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      z-index: 10000;
+      font-size: 16px;
+      text-align: center;
+      max-width: 300px;
+    `;
+    indicator.textContent = `🔊 ${text}`;
+
+    document.body.appendChild(indicator);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+      if (indicator.parentNode) {
+        indicator.parentNode.removeChild(indicator);
+      }
+    }, 3000);
   };
 
   return (
