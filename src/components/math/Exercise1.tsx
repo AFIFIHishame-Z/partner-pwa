@@ -246,8 +246,8 @@ const Exercise1 = () => {
 
       {/* Icon in right middle */}
       <div
-        className="absolute  z-10 flex flex-col gap-3"
-        style={{ right: "35px", top: "32%" }}
+        className="absolute right-4 z-10 flex flex-col gap-3"
+        style={{ top: "32%" }}
       >
         <img
           src="/media/icons/Layer_3.png"
