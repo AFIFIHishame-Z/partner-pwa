@@ -201,12 +201,12 @@ const Exercise1 = () => {
         <img
           src="/media/icons/Group 219.png"
           alt="Icon"
-          className="w-10 h-10 rounded-full border-2 border-white shadow-lg"
+          className="w-10 h-10 rounded-full  shadow-lg"
         />
         <img
           src="/media/icons/Group 220.png"
           alt="Icon"
-          className="w-10 h-10 rounded-full border-2 border-white shadow-lg"
+          className="w-10 h-10 rounded-full  shadow-lg"
         />
         <img
           src="/media/patterns/Frame 409.png"
@@ -240,7 +240,7 @@ const Exercise1 = () => {
         <img
           src="/media/avatars/Group 217.png"
           alt="Avatar"
-          className="w-10 h-10 rounded-full border-2 border-white shadow-lg"
+          className="w-10 h-10 rounded-full  shadow-lg"
         />
       </div>
 
@@ -277,7 +277,7 @@ const Exercise1 = () => {
         <img
           src="/media/icons/Frame 408.png"
           alt="Icon"
-          className="w-14 h-14 rounded-full border-2 border-white shadow-lg"
+          className="w-14 h-14 rounded-full  shadow-lg"
         />
       </div>
 
