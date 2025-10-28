@@ -43,6 +43,11 @@ export interface VoiceResponse {
   error?: string;
 }
 
+export interface NavigationRequest {
+  type: "NAVIGATION_REQUEST";
+  route: string;
+}
+
 export interface CommunicationMessage {
   type: string;
   [key: string]: any;
@@ -357,6 +362,17 @@ class IframeCommunicationService {
 
   public removeVoiceRecordingHandler() {
     this.messageHandlers.delete("VOICE_RECORDING_COMPLETE");
+  }
+
+  public requestNavigation(route: string) {
+    console.log("IframeCommunication: Requesting navigation to:", route);
+
+    const navigationRequest: NavigationRequest = {
+      type: "NAVIGATION_REQUEST",
+      route: route,
+    };
+
+    this.sendMessageToParent(navigationRequest);
   }
 }
 

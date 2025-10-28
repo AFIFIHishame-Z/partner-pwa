@@ -189,6 +189,11 @@ const Exercise1 = () => {
     }, 3000);
   };
 
+  const handleBackToNeighborhoods = () => {
+    console.log("Exercise1: Requesting navigation back to neighborhoods");
+    iframeCommunication.requestNavigation("/neighborhoods");
+  };
+
   return (
     <div
       className="w-full h-screen bg-cover bg-center bg-no-repeat relative"
@@ -200,8 +205,10 @@ const Exercise1 = () => {
       <div className="absolute top-4 left-4 z-10 flex items-center gap-3">
         <img
           src="/media/icons/Group 219.png"
-          alt="Icon"
-          className="w-10 h-10 rounded-full  shadow-lg"
+          alt="Back to Neighborhoods"
+          className="w-10 h-10 rounded-full shadow-lg cursor-pointer hover:scale-105 transition-transform"
+          onClick={handleBackToNeighborhoods}
+          title="Retour aux quartiers"
         />
         <img
           src="/media/icons/Group 220.png"
