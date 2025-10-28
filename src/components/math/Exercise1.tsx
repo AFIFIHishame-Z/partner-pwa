@@ -219,12 +219,12 @@ const Exercise1 = () => {
           src="/media/icons/Group 220.png"
           alt="Icon"
           className="w-10 h-10 rounded-full  shadow-lg"
+          onClick={handleBackToWorldmap}
         />
         <img
           src="/media/patterns/Frame 409.png"
           alt="Pattern"
           className="w-auto h-6"
-          onClick={handleBackToWorldmap}
         />
       </div>
 
