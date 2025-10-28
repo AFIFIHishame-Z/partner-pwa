@@ -194,6 +194,11 @@ const Exercise1 = () => {
     iframeCommunication.requestNavigation("/neighborhoods");
   };
 
+  const handleBackToWorldmap = () => {
+    console.log("Exercise1: Requesting navigation back to subject");
+    iframeCommunication.requestNavigation("/worldmap");
+  };
+
   return (
     <div
       className="w-full h-screen bg-cover bg-center bg-no-repeat relative"
@@ -219,6 +224,7 @@ const Exercise1 = () => {
           src="/media/patterns/Frame 409.png"
           alt="Pattern"
           className="w-auto h-6"
+          onClick={handleBackToWorldmap}
         />
       </div>
 
