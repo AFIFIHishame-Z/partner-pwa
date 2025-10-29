@@ -18,6 +18,7 @@ const Exercise1 = () => {
   const [showVoicePopup, setShowVoicePopup] = useState(false);
   const [base64Voice, setBase64Voice] = useState<any>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
+  const [debugStatus, setDebugStatus] = useState<string>("");
   const isStoppingRef = useRef(false);
   const MAX_RECORDING_DURATION = 60; // Maximum recording duration in seconds
 
@@ -69,6 +70,8 @@ const Exercise1 = () => {
   const handleMicrophoneClick = () => {
     setShowVoicePopup(true);
     setRecordingDuration(0);
+    setDebugStatus("");
+    setBase64Voice(null);
   };
 
   const handleStartRecording = async () => {
@@ -141,7 +144,47 @@ const Exercise1 = () => {
 
       setIsRecording(false);
 
-      const response = await iframeCommunication.stopVoiceRecording();
+      let response;
+      try {
+        setDebugStatus("⏳ Calling stopVoiceRecording...");
+        response = await iframeCommunication.stopVoiceRecording();
+        if (response) {
+          setDebugStatus("✅ Response received from parent");
+        } else {
+          setDebugStatus("⚠️ Response is NULL from parent");
+        }
+      } catch (error) {
+        setDebugStatus(
+          `❌ Promise rejected: ${
+            error instanceof Error ? error.message : "Unknown error"
+          }`
+        );
+        // If promise rejects, create a response object
+        response = {
+          success: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Erreur lors de l'arrêt de l'enregistrement",
+        };
+      }
+
+      // Ensure we always have a response object, even if null/undefined from parent
+      if (!response) {
+        setDebugStatus("⚠️ Response is NULL/UNDEFINED - No response received!");
+        response = {
+          success: false,
+          error: "No response received from parent",
+        };
+      } else {
+        if (response.success) {
+          setDebugStatus("✅ Response: SUCCESS");
+        } else {
+          setDebugStatus(
+            `❌ Response: FAILED - ${response.error || "Unknown error"}`
+          );
+        }
+      }
 
       setBase64Voice(response);
       if (response.success && response.data?.recordDataBase64) {
@@ -161,11 +204,22 @@ const Exercise1 = () => {
           alert("Erreur lors de la conversion de l'audio");
         }
       } else {
-        alert(`Erreur: ${response.error || "Enregistrement échoué"}`);
+        // Always show error message even if response doesn't have data
+        const errorMessage = response.error || "Enregistrement échoué";
+        alert(`Erreur: ${errorMessage}`);
       }
     } catch (error) {
       console.error("Error stopping recording:", error);
-      alert("Erreur lors de l'arrêt de l'enregistrement");
+      // Create a response object even in the outer catch
+      const errorResponse = {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "Erreur inconnue lors de l'arrêt de l'enregistrement",
+      };
+      setBase64Voice(errorResponse);
+      alert(`Erreur: ${errorResponse.error}`);
     } finally {
       isStoppingRef.current = false;
     }
@@ -637,10 +691,12 @@ const Exercise1 = () => {
                 setIsRecording(false);
                 isStoppingRef.current = false;
                 setRecordingDuration(0);
+                setDebugStatus("");
                 if (capturedVoice && capturedVoice.startsWith("blob:")) {
                   URL.revokeObjectURL(capturedVoice);
                 }
                 setCapturedVoice(null);
+                setBase64Voice(null);
               }}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
             >
@@ -673,7 +729,79 @@ const Exercise1 = () => {
               </div>
             )}
 
-            {JSON.stringify(base64Voice)}
+            {/* Debug Panel - Visual Debugging for Phone */}
+            <div className="mb-4 p-3 bg-gray-100 rounded-lg border-2 border-blue-300">
+              <div className="text-xs font-bold text-gray-700 mb-2">
+                🔍 Debug Info:
+              </div>
+              <div className="text-xs space-y-1">
+                {debugStatus && (
+                  <div className="mb-2 p-2 bg-yellow-50 rounded border border-yellow-300">
+                    <span className="font-semibold">Status: </span>
+                    <span className="text-gray-800">{debugStatus}</span>
+                  </div>
+                )}
+                {base64Voice ? (
+                  <>
+                    <div>
+                      <span className="font-semibold">Response Status: </span>
+                      <span
+                        className={
+                          base64Voice.success
+                            ? "text-green-600 font-bold"
+                            : "text-red-600 font-bold"
+                        }
+                      >
+                        {base64Voice.success ? "✅ SUCCESS" : "❌ FAILED"}
+                      </span>
+                    </div>
+                    {base64Voice.error && (
+                      <div>
+                        <span className="font-semibold">Error: </span>
+                        <span className="text-red-600 break-words">
+                          {base64Voice.error}
+                        </span>
+                      </div>
+                    )}
+                    {base64Voice.data?.recordDataBase64 ? (
+                      <div>
+                        <span className="font-semibold">Audio Data: </span>
+                        <span className="text-green-600">
+                          ✅ Present (
+                          {Math.round(
+                            (base64Voice.data.recordDataBase64.length || 0) /
+                              1024
+                          )}{" "}
+                          KB)
+                        </span>
+                      </div>
+                    ) : (
+                      <div>
+                        <span className="font-semibold">Audio Data: </span>
+                        <span className="text-orange-600">❌ Not present</span>
+                      </div>
+                    )}
+                    {base64Voice.requestId && (
+                      <div>
+                        <span className="font-semibold">Request ID: </span>
+                        <span className="text-gray-600 font-mono text-[10px] break-all">
+                          {String(base64Voice.requestId)}
+                        </span>
+                      </div>
+                    )}
+                    {!base64Voice.success && !base64Voice.error && (
+                      <div className="text-red-600 font-bold">
+                        ⚠️ No error message provided
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-red-600 font-bold">
+                    ⚠️ Response is NULL - No data received
+                  </div>
+                )}
+              </div>
+            </div>
 
             {/* Playback if recording is complete */}
             {capturedVoice && !isRecording && (

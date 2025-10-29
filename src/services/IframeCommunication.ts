@@ -94,16 +94,39 @@ class IframeCommunicationService {
       // Check for voice response handler
       if (message.type === "VOICE_RESPONSE" && message.requestId) {
         const specificHandlerKey = `VOICE_RESPONSE_${message.requestId}`;
+        console.log(
+          "🎤 IframeCommunication: Looking for voice handler with key:",
+          specificHandlerKey
+        );
+        console.log(
+          "🎤 IframeCommunication: Available handler keys:",
+          Array.from(this.messageHandlers.keys()).filter((k) =>
+            k.startsWith("VOICE_RESPONSE_")
+          )
+        );
         if (this.messageHandlers.has(specificHandlerKey)) {
           console.log(
-            "IframeCommunication: Found specific voice handler for request ID:",
+            "🎤 IframeCommunication: Found specific voice handler for request ID:",
             message.requestId
           );
           const handler = this.messageHandlers.get(specificHandlerKey);
           if (handler) {
+            console.log(
+              "🎤 IframeCommunication: Calling voice handler with message:",
+              message
+            );
             handler(message);
             return;
+          } else {
+            console.warn(
+              "🎤 IframeCommunication: Handler found but is null/undefined"
+            );
           }
+        } else {
+          console.warn(
+            "🎤 IframeCommunication: No handler found for key:",
+            specificHandlerKey
+          );
         }
       }
 
@@ -324,19 +347,66 @@ class IframeCommunicationService {
   }
 
   public stopVoiceRecording(): Promise<VoiceResponse> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const requestId = `voice_stop_${Date.now()}_${Math.random()}`;
+      let isResolved = false;
 
       const responseHandler = (message: CommunicationMessage) => {
+        console.log(
+          "🎤 stopVoiceRecording: Handler received message:",
+          message
+        );
+        console.log("🎤 stopVoiceRecording: Expected requestId:", requestId);
+        console.log(
+          "🎤 stopVoiceRecording: Received requestId:",
+          message.requestId
+        );
+        console.log(
+          "🎤 stopVoiceRecording: RequestId match:",
+          message.requestId === requestId
+        );
+        console.log("🎤 stopVoiceRecording: Message type:", message.type);
+        console.log("🎤 stopVoiceRecording: Is resolved:", isResolved);
+
+        if (isResolved) {
+          console.log(
+            "🎤 stopVoiceRecording: Promise already resolved, ignoring message"
+          );
+          return;
+        }
+
         if (
           message.type === "VOICE_RESPONSE" &&
-          message.requestId === requestId
+          String(message.requestId) === String(requestId)
         ) {
+          console.log(
+            "🎤 stopVoiceRecording: Message matches, resolving promise"
+          );
+          isResolved = true;
           this.messageHandlers.delete(`VOICE_RESPONSE_${requestId}`);
-          resolve(message as VoiceResponse);
+          // Ensure we always resolve with a valid response object
+          const response: VoiceResponse = {
+            type: "VOICE_RESPONSE",
+            success: message.success ?? false,
+            data: message.data,
+            error: message.error,
+          };
+          console.log(
+            "🎤 stopVoiceRecording: Resolving with response:",
+            response
+          );
+          resolve(response);
+        } else {
+          console.log(
+            "🎤 stopVoiceRecording: Message does not match expected criteria"
+          );
         }
       };
 
+      console.log(
+        "🎤 stopVoiceRecording: Setting up handler for requestId:",
+        requestId
+      );
       this.messageHandlers.set(`VOICE_RESPONSE_${requestId}`, responseHandler);
 
       const voiceRequest: VoiceRequest & { requestId: string } = {
@@ -345,12 +415,33 @@ class IframeCommunicationService {
         requestId,
       };
 
+      console.log(
+        "🎤 stopVoiceRecording: Sending request to parent:",
+        voiceRequest
+      );
       this.sendMessageToParent(voiceRequest);
 
       setTimeout(() => {
-        if (this.messageHandlers.has(`VOICE_RESPONSE_${requestId}`)) {
+        if (
+          this.messageHandlers.has(`VOICE_RESPONSE_${requestId}`) &&
+          !isResolved
+        ) {
+          console.log(
+            "🎤 stopVoiceRecording: Timeout reached, resolving with timeout error"
+          );
+          isResolved = true;
           this.messageHandlers.delete(`VOICE_RESPONSE_${requestId}`);
-          reject(new Error("Voice recording stop timeout"));
+          // Resolve with error response instead of rejecting to ensure response object is always returned
+          resolve({
+            type: "VOICE_RESPONSE",
+            requestId,
+            success: false,
+            error: "Voice recording stop timeout",
+          } as VoiceResponse);
+        } else {
+          console.log(
+            "🎤 stopVoiceRecording: Timeout reached but promise already resolved or handler removed"
+          );
         }
       }, 15000); // 15 second timeout
     });
