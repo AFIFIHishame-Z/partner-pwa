@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { iframeCommunication } from "../../services/IframeCommunication";
+import {
+  iframeCommunication,
+  type VoiceRequest,
+} from "../../services/IframeCommunication";
 
 const Exercise1 = () => {
   const [mathProblem, setMathProblem] = useState({
@@ -16,6 +19,7 @@ const Exercise1 = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [capturedVoice, setCapturedVoice] = useState<string | null>(null);
   const [showVoicePopup, setShowVoicePopup] = useState(false);
+  const [base64Voice, setBase64Voice] = useState<any>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
   const isStoppingRef = useRef(false);
   const MAX_RECORDING_DURATION = 60; // Maximum recording duration in seconds
@@ -142,6 +146,7 @@ const Exercise1 = () => {
 
       const response = await iframeCommunication.stopVoiceRecording();
 
+      setBase64Voice(response);
       if (response.success && response.data?.recordDataBase64) {
         try {
           // Convert base64 to audio URL for playback
@@ -670,6 +675,8 @@ const Exercise1 = () => {
                 </div>
               </div>
             )}
+
+            {JSON.stringify(base64Voice)}
 
             {/* Playback if recording is complete */}
             {capturedVoice && !isRecording && (
