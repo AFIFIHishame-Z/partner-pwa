@@ -339,7 +339,7 @@ const Exercise1 = () => {
             {isCapturing ? "⏳" : "📸"}
           </span>
         </div>
-        <div
+        {/* <div
           className="w-14 h-14 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-105 transition-transform flex items-center justify-center bg-white/20 backdrop-blur-sm"
           onClick={handleMicrophoneClick}
         >
@@ -353,7 +353,7 @@ const Exercise1 = () => {
           >
             {isRecording ? "⏳" : "🎤"}
           </span>
-        </div>
+        </div> */}
       </div>
 
       {/* Icon in bottom right corner. */}
