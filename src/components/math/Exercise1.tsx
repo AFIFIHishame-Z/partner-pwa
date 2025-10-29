@@ -95,23 +95,63 @@ const Exercise1 = () => {
       } else {
         // Start duration timer
         let currentDuration = 0;
+        let hasStopped = false; // Flag to prevent multiple stops
         const timer = setInterval(() => {
-          currentDuration += 0.1;
-          const newDuration = Math.min(currentDuration, MAX_RECORDING_DURATION);
-
-          // Auto-stop when reaching 58 seconds
-          if (newDuration >= 58 && !isStoppingRef.current) {
+          if (hasStopped || isStoppingRef.current) {
             clearInterval(timer);
             (window as any).recordingTimer = null;
-            // Stop recording automatically at 58s and send message to parent
-            handleStopRecording().catch((error) => {
-              console.error("Error auto-stopping recording:", error);
-            });
-            setRecordingDuration(58); // Set duration to 58s
             return;
           }
 
+          currentDuration += 0.1;
+          const newDuration = Math.min(currentDuration, MAX_RECORDING_DURATION);
           setRecordingDuration(newDuration);
+
+          // Auto-stop when reaching 58 seconds
+          if (newDuration >= 58 && !hasStopped && !isStoppingRef.current) {
+            hasStopped = true;
+            clearInterval(timer);
+            (window as any).recordingTimer = null;
+            console.log("🛑 Auto-stopping at 58 seconds");
+
+            // Set state immediately to prevent double-stop
+            isStoppingRef.current = true;
+            setIsRecording(false);
+
+            // Stop recording automatically at 58s and send message to parent
+            // Call stopVoiceRecording directly to ensure message is sent
+            iframeCommunication
+              .stopVoiceRecording()
+              .then((response) => {
+                console.log("✅ Auto-stop response received:", response);
+                if (response.success && response.data?.recordDataBase64) {
+                  try {
+                    // Convert base64 to audio URL for playback
+                    const binaryString = atob(response.data.recordDataBase64);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                      bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    const mimeType = response.data.format || "audio/webm";
+                    const audioBlob = new Blob([bytes], { type: mimeType });
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    setCapturedVoice(audioUrl);
+                  } catch (error) {
+                    console.error("Error converting base64 to blob:", error);
+                  }
+                } else {
+                  console.warn(
+                    "Auto-stop: No audio data in response:",
+                    response.error
+                  );
+                }
+                isStoppingRef.current = false;
+              })
+              .catch((error) => {
+                console.error("Error auto-stopping recording:", error);
+                isStoppingRef.current = false;
+              });
+          }
         }, 100);
         (window as any).recordingTimer = timer;
       }
