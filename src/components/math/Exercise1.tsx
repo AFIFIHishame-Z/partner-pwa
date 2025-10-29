@@ -13,7 +13,7 @@ const Exercise1 = () => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [showImagePopup, setShowImagePopup] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
+  // const [isRecording, setIsRecording] = useState(false);
   const [capturedVoice, setCapturedVoice] = useState<string | null>(null);
   const [showVoicePopup, setShowVoicePopup] = useState(false);
 
@@ -102,58 +102,58 @@ const Exercise1 = () => {
     }
   };
 
-  const handleMicrophoneClick = async () => {
-    try {
-      setIsRecording(true);
-      console.log("🎤 Starting microphone recording...");
+  // const handleMicrophoneClick = async () => {
+  //   try {
+  //     setIsRecording(true);
+  //     console.log("🎤 Starting microphone recording...");
 
-      const response = await iframeCommunication.requestVoiceRecord({
-        maxDuration: 60,
-        audioFormat: "webm",
-        quality: "medium",
-      });
+  //     const response = await iframeCommunication.requestVoiceRecord({
+  //       maxDuration: 60,
+  //       audioFormat: "webm",
+  //       quality: "medium",
+  //     });
 
-      console.log("🎤 Voice recording response received:", response);
+  //     console.log("🎤 Voice recording response received:", response);
 
-      if (response.success && response.data) {
-        let audioUrl: string | null = null;
+  //     if (response.success && response.data) {
+  //       let audioUrl: string | null = null;
 
-        // Handle audioUrl (string)
-        if (response.data.audioUrl) {
-          audioUrl = response.data.audioUrl;
-        }
-        // Handle audioBlob (Blob)
-        else if (response.data.audioBlob) {
-          audioUrl = URL.createObjectURL(response.data.audioBlob);
-        }
+  //       // Handle audioUrl (string)
+  //       if (response.data.audioUrl) {
+  //         audioUrl = response.data.audioUrl;
+  //       }
+  //       // Handle audioBlob (Blob)
+  //       else if (response.data.audioBlob) {
+  //         audioUrl = URL.createObjectURL(response.data.audioBlob);
+  //       }
 
-        if (audioUrl) {
-          setCapturedVoice(audioUrl);
-          setShowVoicePopup(true);
-          console.log("🎤 Voice recorded and displayed successfully");
-        } else {
-          console.error("🎤 No audio data received");
-          alert("Erreur: Aucun enregistrement audio reçu");
-        }
-      } else {
-        console.error("🎤 Voice recording failed:", response.error);
-        alert(
-          `Erreur d'enregistrement: ${
-            response.error || "Enregistrement échoué"
-          }`
-        );
-      }
-    } catch (error) {
-      console.error("🎤 Voice recording error:", error);
-      alert(
-        `Erreur d'enregistrement: ${
-          error instanceof Error ? error.message : "Erreur inconnue"
-        }`
-      );
-    } finally {
-      setIsRecording(false);
-    }
-  };
+  //       if (audioUrl) {
+  //         setCapturedVoice(audioUrl);
+  //         setShowVoicePopup(true);
+  //         console.log("🎤 Voice recorded and displayed successfully");
+  //       } else {
+  //         console.error("🎤 No audio data received");
+  //         alert("Erreur: Aucun enregistrement audio reçu");
+  //       }
+  //     } else {
+  //       console.error("🎤 Voice recording failed:", response.error);
+  //       alert(
+  //         `Erreur d'enregistrement: ${
+  //           response.error || "Enregistrement échoué"
+  //         }`
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error("🎤 Voice recording error:", error);
+  //     alert(
+  //       `Erreur d'enregistrement: ${
+  //         error instanceof Error ? error.message : "Erreur inconnue"
+  //       }`
+  //     );
+  //   } finally {
+  //     setIsRecording(false);
+  //   }
+  // };
 
   const speakText = (text: string) => {
     // Try multiple approaches for iframe/PWA compatibility
