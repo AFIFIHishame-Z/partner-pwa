@@ -173,7 +173,7 @@ const FrenchVoiceExercise = () => {
 
       if (response.success && response.data) {
         // Handle different audio data formats from parent app
-        const audioData = response.data.audioUrl || response.data.audioBlob;
+        const audioData = response.data || response.data;
         console.log("🎤 Audio data from parent:", audioData);
         console.log("🎤 Audio data type:", typeof audioData);
 
@@ -186,10 +186,7 @@ const FrenchVoiceExercise = () => {
           }
 
           if (typeof audioData === "string") {
-            console.log(
-              "🎤 Setting recorded audio from parent string:",
-              audioData.substring(0, 50) + "..."
-            );
+            console.log("🎤 Setting recorded audio from parent string:");
             setRecordedAudio(audioData);
             console.log("🎤 Audio URL set successfully from parent");
           } else if (audioData instanceof Blob) {
