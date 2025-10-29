@@ -13,6 +13,9 @@ const Exercise1 = () => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [showImagePopup, setShowImagePopup] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [capturedVoice, setCapturedVoice] = useState<string | null>(null);
+  const [showVoicePopup, setShowVoicePopup] = useState(false);
 
   useEffect(() => {
     generateRandomProblem();
@@ -96,6 +99,59 @@ const Exercise1 = () => {
       );
     } finally {
       setIsCapturing(false);
+    }
+  };
+
+  const handleMicrophoneClick = async () => {
+    try {
+      setIsRecording(true);
+      console.log("🎤 Starting microphone recording...");
+
+      const response = await iframeCommunication.requestVoiceRecord({
+        maxDuration: 60,
+        audioFormat: "webm",
+        quality: "medium",
+      });
+
+      console.log("🎤 Voice recording response received:", response);
+
+      if (response.success && response.data) {
+        let audioUrl: string | null = null;
+
+        // Handle audioUrl (string)
+        if (response.data.audioUrl) {
+          audioUrl = response.data.audioUrl;
+        }
+        // Handle audioBlob (Blob)
+        else if (response.data.audioBlob) {
+          audioUrl = URL.createObjectURL(response.data.audioBlob);
+        }
+
+        if (audioUrl) {
+          setCapturedVoice(audioUrl);
+          setShowVoicePopup(true);
+          console.log("🎤 Voice recorded and displayed successfully");
+        } else {
+          console.error("🎤 No audio data received");
+          alert("Erreur: Aucun enregistrement audio reçu");
+        }
+      } else {
+        console.error("🎤 Voice recording failed:", response.error);
+        alert(
+          `Erreur d'enregistrement: ${
+            response.error || "Enregistrement échoué"
+          }`
+        );
+      }
+    } catch (error) {
+      console.error("🎤 Voice recording error:", error);
+      alert(
+        `Erreur d'enregistrement: ${
+          error instanceof Error ? error.message : "Erreur inconnue"
+        }`
+      );
+    } finally {
+      setIsRecording(false);
     }
   };
 
@@ -260,7 +316,7 @@ const Exercise1 = () => {
       {/* Icon in right middle */}
       <div
         className="absolute right-4 z-10 flex flex-col gap-3"
-        style={{ top: "32%" }}
+        style={{ top: "27%" }}
       >
         <img
           src="/media/icons/Layer_3.png"
@@ -281,6 +337,21 @@ const Exercise1 = () => {
             }}
           >
             {isCapturing ? "⏳" : "📸"}
+          </span>
+        </div>
+        <div
+          className="w-14 h-14 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-105 transition-transform flex items-center justify-center bg-white/20 backdrop-blur-sm"
+          onClick={handleMicrophoneClick}
+        >
+          <span
+            className="text-2xl"
+            style={{
+              fontSize: "2rem",
+              top: isRecording ? "-3px" : "-7px",
+              position: "relative",
+            }}
+          >
+            {isRecording ? "⏳" : "🎤"}
           </span>
         </div>
       </div>
@@ -437,6 +508,40 @@ const Exercise1 = () => {
                 className="max-w-full h-auto rounded-lg shadow-lg"
                 style={{ maxHeight: "160px" }}
               />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Voice Recording Popup */}
+      {showVoicePopup && capturedVoice && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 relative">
+            <button
+              onClick={() => {
+                setShowVoicePopup(false);
+                // Clean up object URL to prevent memory leaks
+                if (capturedVoice.startsWith("blob:")) {
+                  URL.revokeObjectURL(capturedVoice);
+                }
+                setCapturedVoice(null);
+              }}
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+            >
+              ×
+            </button>
+            <h3 className="text-lg font-semibold mb-4 text-center">
+              Enregistrement Vocal
+            </h3>
+            <div className="text-center flex justify-center items-center">
+              <audio
+                src={capturedVoice}
+                controls
+                className="w-full max-w-md"
+                autoPlay={false}
+              >
+                Votre navigateur ne supporte pas l'élément audio.
+              </audio>
             </div>
           </div>
         </div>
