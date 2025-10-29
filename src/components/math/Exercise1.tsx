@@ -98,23 +98,16 @@ const Exercise1 = () => {
           setRecordingDuration((prev) => {
             const newDuration = Math.min(prev + 0.1, MAX_RECORDING_DURATION);
 
-            // Auto-stop when reaching max duration
-            if (
-              newDuration >= MAX_RECORDING_DURATION &&
-              !isStoppingRef.current
-            ) {
+            // Auto-stop when reaching 59 seconds
+            if (newDuration >= 59 && !isStoppingRef.current && isRecording) {
               clearInterval(timer);
               (window as any).recordingTimer = null;
-              isStoppingRef.current = true;
-              // Stop recording automatically (async, but we've cleared timer)
-              handleStopRecording()
-                .catch((error) => {
-                  console.error("Error auto-stopping recording:", error);
-                })
-                .finally(() => {
-                  isStoppingRef.current = false;
-                });
-              return MAX_RECORDING_DURATION;
+              // Stop recording automatically at 59s and send message to parent
+              // Note: handleStopRecording will set isStoppingRef.current
+              handleStopRecording().catch((error) => {
+                console.error("Error auto-stopping recording:", error);
+              });
+              return 59; // Set duration to 59s
             }
             return newDuration;
           });
@@ -817,20 +810,14 @@ const Exercise1 = () => {
               </div>
             )}
 
-            {/* WhatsApp-style Hold Button */}
+            {/* Click to Start/Stop Button */}
             <div className="flex justify-center items-center">
               <button
-                onMouseDown={handleStartRecording}
-                onMouseUp={handleStopRecording}
-                onMouseLeave={isRecording ? handleStopRecording : undefined}
-                onTouchStart={(e) => {
-                  e.preventDefault();
-                  handleStartRecording();
-                }}
-                onTouchEnd={(e) => {
-                  e.preventDefault();
+                onClick={() => {
                   if (isRecording) {
                     handleStopRecording();
+                  } else {
+                    handleStartRecording();
                   }
                 }}
                 className={`
@@ -865,10 +852,10 @@ const Exercise1 = () => {
             {/* Instruction text */}
             <p className="text-center text-sm text-gray-600 mt-4">
               {isRecording
-                ? "Relâchez pour arrêter"
+                ? "Cliquez pour arrêter"
                 : capturedVoice
-                ? "Tenez pour enregistrer à nouveau"
-                : "Maintenez pour enregistrer"}
+                ? "Cliquez pour enregistrer à nouveau"
+                : "Cliquez pour enregistrer"}
             </p>
           </div>
         </div>
