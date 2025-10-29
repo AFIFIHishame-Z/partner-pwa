@@ -94,23 +94,24 @@ const Exercise1 = () => {
         setIsRecording(false);
       } else {
         // Start duration timer
+        let currentDuration = 0;
         const timer = setInterval(() => {
-          setRecordingDuration((prev) => {
-            const newDuration = Math.min(prev + 0.1, MAX_RECORDING_DURATION);
+          currentDuration += 0.1;
+          const newDuration = Math.min(currentDuration, MAX_RECORDING_DURATION);
 
-            // Auto-stop when reaching 59 seconds
-            if (newDuration >= 58 && !isStoppingRef.current && isRecording) {
-              clearInterval(timer);
-              (window as any).recordingTimer = null;
-              // Stop recording automatically at 59s and send message to parent
-              // Note: handleStopRecording will set isStoppingRef.current
-              handleStopRecording().catch((error) => {
-                console.error("Error auto-stopping recording:", error);
-              });
-              return 58; // Set duration to 59s
-            }
-            return newDuration;
-          });
+          // Auto-stop when reaching 58 seconds
+          if (newDuration >= 58 && !isStoppingRef.current) {
+            clearInterval(timer);
+            (window as any).recordingTimer = null;
+            // Stop recording automatically at 58s and send message to parent
+            handleStopRecording().catch((error) => {
+              console.error("Error auto-stopping recording:", error);
+            });
+            setRecordingDuration(58); // Set duration to 58s
+            return;
+          }
+
+          setRecordingDuration(newDuration);
         }, 100);
         (window as any).recordingTimer = timer;
       }
