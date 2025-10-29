@@ -16,9 +16,9 @@ const Exercise1 = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [capturedVoice, setCapturedVoice] = useState<string | null>(null);
   const [showVoicePopup, setShowVoicePopup] = useState(false);
-  const [base64Voice, setBase64Voice] = useState<any>(null);
+  // const [base64Voice, setBase64Voice] = useState<any>(null);
   const [recordingDuration, setRecordingDuration] = useState(0);
-  const [debugStatus, setDebugStatus] = useState<string>("");
+  // const [debugStatus, setDebugStatus] = useState<string>("");
   const isStoppingRef = useRef(false);
   const MAX_RECORDING_DURATION = 60; // Maximum recording duration in seconds
 
@@ -70,8 +70,8 @@ const Exercise1 = () => {
   const handleMicrophoneClick = () => {
     setShowVoicePopup(true);
     setRecordingDuration(0);
-    setDebugStatus("");
-    setBase64Voice(null);
+    // setDebugStatus("");
+    // setBase64Voice(null);
   };
 
   const handleStartRecording = async () => {
@@ -146,19 +146,19 @@ const Exercise1 = () => {
 
       let response;
       try {
-        setDebugStatus("⏳ Calling stopVoiceRecording...");
+        // setDebugStatus("⏳ Calling stopVoiceRecording...");
         response = await iframeCommunication.stopVoiceRecording();
         if (response) {
-          setDebugStatus("✅ Response received from parent");
+          // setDebugStatus("✅ Response received from parent");
         } else {
-          setDebugStatus("⚠️ Response is NULL from parent");
+          // setDebugStatus("⚠️ Response is NULL from parent");
         }
       } catch (error) {
-        setDebugStatus(
-          `❌ Promise rejected: ${
-            error instanceof Error ? error.message : "Unknown error"
-          }`
-        );
+        // setDebugStatus(
+        //   `❌ Promise rejected: ${
+        //     error instanceof Error ? error.message : "Unknown error"
+        //   }`
+        // );
         // If promise rejects, create a response object
         response = {
           success: false,
@@ -171,22 +171,22 @@ const Exercise1 = () => {
 
       // Ensure we always have a response object, even if null/undefined from parent
       if (!response) {
-        setDebugStatus("⚠️ Response is NULL/UNDEFINED - No response received!");
+        // setDebugStatus("⚠️ Response is NULL/UNDEFINED - No response received!");
         response = {
           success: false,
           error: "No response received from parent",
         };
       } else {
         if (response.success) {
-          setDebugStatus("✅ Response: SUCCESS");
+          // setDebugStatus("✅ Response: SUCCESS");
         } else {
-          setDebugStatus(
-            `❌ Response: FAILED - ${response.error || "Unknown error"}`
-          );
+          // setDebugStatus(
+          //   `❌ Response: FAILED - ${response.error || "Unknown error"}`
+          // );
         }
       }
 
-      setBase64Voice(response);
+      // setBase64Voice(response);
       if (response.success && response.data?.recordDataBase64) {
         try {
           // Convert base64 to audio URL for playback
@@ -218,7 +218,7 @@ const Exercise1 = () => {
             ? error.message
             : "Erreur inconnue lors de l'arrêt de l'enregistrement",
       };
-      setBase64Voice(errorResponse);
+      // setBase64Voice(errorResponse);
       alert(`Erreur: ${errorResponse.error}`);
     } finally {
       isStoppingRef.current = false;
@@ -691,12 +691,12 @@ const Exercise1 = () => {
                 setIsRecording(false);
                 isStoppingRef.current = false;
                 setRecordingDuration(0);
-                setDebugStatus("");
+                // setDebugStatus("");
                 if (capturedVoice && capturedVoice.startsWith("blob:")) {
                   URL.revokeObjectURL(capturedVoice);
                 }
                 setCapturedVoice(null);
-                setBase64Voice(null);
+                // setBase64Voice(null);
               }}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
             >
@@ -730,7 +730,7 @@ const Exercise1 = () => {
             )}
 
             {/* Debug Panel - Visual Debugging for Phone */}
-            <div className="mb-4 p-3 bg-gray-100 rounded-lg border-2 border-blue-300">
+            {/* <div className="mb-4 p-3 bg-gray-100 rounded-lg border-2 border-blue-300">
               <div className="text-xs font-bold text-gray-700 mb-2">
                 🔍 Debug Info:
               </div>
@@ -801,7 +801,7 @@ const Exercise1 = () => {
                   </div>
                 )}
               </div>
-            </div>
+            </div> */}
 
             {/* Playback if recording is complete */}
             {capturedVoice && !isRecording && (
