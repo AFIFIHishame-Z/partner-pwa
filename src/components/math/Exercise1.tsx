@@ -1,8 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  iframeCommunication,
-  type VoiceRequest,
-} from "../../services/IframeCommunication";
+import { iframeCommunication } from "../../services/IframeCommunication";
 
 const Exercise1 = () => {
   const [mathProblem, setMathProblem] = useState({
