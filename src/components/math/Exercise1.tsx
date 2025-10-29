@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { iframeCommunication } from "../../services/IframeCommunication";
 
 const Exercise1 = () => {
@@ -13,9 +13,12 @@ const Exercise1 = () => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [showImagePopup, setShowImagePopup] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
-  // const [isRecording, setIsRecording] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const [capturedVoice, setCapturedVoice] = useState<string | null>(null);
   const [showVoicePopup, setShowVoicePopup] = useState(false);
+  const [recordingDuration, setRecordingDuration] = useState(0);
+  const isStoppingRef = useRef(false);
+  const MAX_RECORDING_DURATION = 60; // Maximum recording duration in seconds
 
   useEffect(() => {
     generateRandomProblem();
@@ -59,6 +62,110 @@ const Exercise1 = () => {
       const userResult = userInput;
       const message = `L'opération est ${operationText}. Votre résultat est ${userResult}`;
       speakText(message);
+    }
+  };
+
+  const handleMicrophoneClick = () => {
+    setShowVoicePopup(true);
+    setRecordingDuration(0);
+  };
+
+  const handleStartRecording = async () => {
+    try {
+      setIsRecording(true);
+      isStoppingRef.current = false;
+      setRecordingDuration(0);
+
+      const response = await iframeCommunication.startVoiceRecording({
+        maxDuration: MAX_RECORDING_DURATION,
+        audioFormat: "webm",
+      });
+
+      if (!response.success) {
+        alert(
+          `Erreur: ${
+            response.error || "Impossible de démarrer l'enregistrement"
+          }`
+        );
+        setIsRecording(false);
+      } else {
+        // Start duration timer
+        const timer = setInterval(() => {
+          setRecordingDuration((prev) => {
+            const newDuration = Math.min(prev + 0.1, MAX_RECORDING_DURATION);
+
+            // Auto-stop when reaching max duration
+            if (
+              newDuration >= MAX_RECORDING_DURATION &&
+              !isStoppingRef.current
+            ) {
+              clearInterval(timer);
+              (window as any).recordingTimer = null;
+              isStoppingRef.current = true;
+              // Stop recording automatically (async, but we've cleared timer)
+              handleStopRecording()
+                .catch((error) => {
+                  console.error("Error auto-stopping recording:", error);
+                })
+                .finally(() => {
+                  isStoppingRef.current = false;
+                });
+              return MAX_RECORDING_DURATION;
+            }
+            return newDuration;
+          });
+        }, 100);
+        (window as any).recordingTimer = timer;
+      }
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      alert("Erreur lors du démarrage de l'enregistrement");
+      setIsRecording(false);
+    }
+  };
+
+  const handleStopRecording = async () => {
+    // Prevent double-stop
+    if (isStoppingRef.current || !isRecording) {
+      return;
+    }
+
+    try {
+      isStoppingRef.current = true;
+      // Clear timer
+      if ((window as any).recordingTimer) {
+        clearInterval((window as any).recordingTimer);
+        (window as any).recordingTimer = null;
+      }
+
+      setIsRecording(false);
+
+      const response = await iframeCommunication.stopVoiceRecording();
+
+      if (response.success && response.data?.recordDataBase64) {
+        try {
+          // Convert base64 to audio URL for playback
+          const binaryString = atob(response.data.recordDataBase64);
+          const bytes = new Uint8Array(binaryString.length);
+          for (let i = 0; i < binaryString.length; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+          }
+          const mimeType = response.data.format || "audio/webm";
+          const audioBlob = new Blob([bytes], { type: mimeType });
+          const audioUrl = URL.createObjectURL(audioBlob);
+          setCapturedVoice(audioUrl);
+        } catch (error) {
+          console.error("Error converting base64 to blob:", error);
+          alert("Erreur lors de la conversion de l'audio");
+        }
+      } else {
+        alert(`Erreur: ${response.error || "Enregistrement échoué"}`);
+      }
+    } catch (error) {
+      console.error("Error stopping recording:", error);
+      alert("Erreur lors de l'arrêt de l'enregistrement");
+    } finally {
+      isStoppingRef.current = false;
     }
   };
 
@@ -339,7 +446,7 @@ const Exercise1 = () => {
             {isCapturing ? "⏳" : "📸"}
           </span>
         </div>
-        {/* <div
+        <div
           className="w-14 h-14 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-105 transition-transform flex items-center justify-center bg-white/20 backdrop-blur-sm"
           onClick={handleMicrophoneClick}
         >
@@ -353,7 +460,7 @@ const Exercise1 = () => {
           >
             {isRecording ? "⏳" : "🎤"}
           </span>
-        </div> */}
+        </div>
       </div>
 
       {/* Icon in bottom right corner. */}
@@ -513,36 +620,124 @@ const Exercise1 = () => {
         </div>
       )}
 
-      {/* Voice Recording Popup */}
-      {showVoicePopup && capturedVoice && (
+      {/* Voice Recording Popup - WhatsApp Style */}
+      {showVoicePopup && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 relative">
+          <div className="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 relative shadow-2xl">
+            {/* Close button */}
             <button
               onClick={() => {
+                if ((window as any).recordingTimer) {
+                  clearInterval((window as any).recordingTimer);
+                  (window as any).recordingTimer = null;
+                }
                 setShowVoicePopup(false);
-                // Clean up object URL to prevent memory leaks
-                if (capturedVoice.startsWith("blob:")) {
+                setIsRecording(false);
+                isStoppingRef.current = false;
+                setRecordingDuration(0);
+                if (capturedVoice && capturedVoice.startsWith("blob:")) {
                   URL.revokeObjectURL(capturedVoice);
                 }
                 setCapturedVoice(null);
               }}
-              className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl font-bold"
+              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
             >
               ×
             </button>
-            <h3 className="text-lg font-semibold mb-4 text-center">
-              Enregistrement Vocal
-            </h3>
-            <div className="text-center flex justify-center items-center">
-              <audio
-                src={capturedVoice}
-                controls
-                className="w-full max-w-md"
-                autoPlay={false}
-              >
-                Votre navigateur ne supporte pas l'élément audio.
-              </audio>
+
+            {/* Bonjour text */}
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-semibold text-gray-800">Bonjour</h2>
             </div>
+
+            {/* Recording status */}
+            {isRecording && (
+              <div className="text-center mb-4">
+                <p className="text-sm text-red-500 font-medium">
+                  Enregistrement... {recordingDuration.toFixed(1)} /{" "}
+                  {MAX_RECORDING_DURATION}s
+                </p>
+                {/* Progress bar */}
+                <div className="mt-2 w-full bg-gray-200 rounded-full h-2 max-w-xs mx-auto">
+                  <div
+                    className="bg-red-500 h-2 rounded-full transition-all duration-100"
+                    style={{
+                      width: `${
+                        (recordingDuration / MAX_RECORDING_DURATION) * 100
+                      }%`,
+                    }}
+                  ></div>
+                </div>
+              </div>
+            )}
+
+            {/* Playback if recording is complete */}
+            {capturedVoice && !isRecording && (
+              <div className="mb-6">
+                <audio
+                  src={capturedVoice}
+                  controls
+                  className="w-full"
+                  autoPlay={false}
+                >
+                  Votre navigateur ne supporte pas l'élément audio.
+                </audio>
+              </div>
+            )}
+
+            {/* WhatsApp-style Hold Button */}
+            <div className="flex justify-center items-center">
+              <button
+                onMouseDown={handleStartRecording}
+                onMouseUp={handleStopRecording}
+                onMouseLeave={isRecording ? handleStopRecording : undefined}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  handleStartRecording();
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  if (isRecording) {
+                    handleStopRecording();
+                  }
+                }}
+                className={`
+                  w-20 h-20 rounded-full flex items-center justify-center
+                  transition-all duration-200 shadow-lg
+                  ${
+                    isRecording
+                      ? "bg-red-500 scale-110 animate-pulse"
+                      : "bg-blue-500 hover:bg-blue-600 active:scale-95"
+                  }
+                `}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className={`h-10 w-10 ${
+                    isRecording ? "text-white" : "text-white"
+                  }`}
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  {isRecording ? (
+                    // Stop icon (square)
+                    <path d="M6 6h12v12H6z" />
+                  ) : (
+                    // Microphone icon
+                    <path d="M12 14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2s-2 .9-2 2v6c0 1.1.9 2 2 2zm5-2v-1c0-2.8-2.2-5-5-5S7 8.2 7 11v1c0 .6-.4 1-1 1s-1-.4-1-1v-1c0-3.9 3.1-7 7-7s7 3.1 7 7v1c0 .6-.4 1-1 1s-1-.4-1-1zm-5 4c-2.2 0-4-1.8-4-4v-2h2v2c0 1.1.9 2 2 2s2-.9 2-2v-2h2v2c0 2.2-1.8 4-4 4z" />
+                  )}
+                </svg>
+              </button>
+            </div>
+
+            {/* Instruction text */}
+            <p className="text-center text-sm text-gray-600 mt-4">
+              {isRecording
+                ? "Relâchez pour arrêter"
+                : capturedVoice
+                ? "Tenez pour enregistrer à nouveau"
+                : "Maintenez pour enregistrer"}
+            </p>
           </div>
         </div>
       )}

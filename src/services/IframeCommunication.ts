@@ -35,8 +35,7 @@ export interface VoiceResponse {
   type: "VOICE_RESPONSE";
   success: boolean;
   data?: {
-    audioBlob?: Blob;
-    audioUrl?: string;
+    recordDataBase64: string; // Base64 encoded audio (required when success and audio data available)
     duration?: number; // in seconds
     format?: string;
   };
@@ -281,6 +280,80 @@ class IframeCommunicationService {
 
   public isCommunicationReady(): boolean {
     return this.isReady;
+  }
+
+  public startVoiceRecording(
+    options?: VoiceRequest["options"]
+  ): Promise<VoiceResponse> {
+    return new Promise((resolve, reject) => {
+      const requestId = `voice_start_${Date.now()}_${Math.random()}`;
+
+      const responseHandler = (message: CommunicationMessage) => {
+        if (
+          message.type === "VOICE_RESPONSE" &&
+          message.requestId === requestId
+        ) {
+          this.messageHandlers.delete(`VOICE_RESPONSE_${requestId}`);
+          resolve(message as VoiceResponse);
+        }
+      };
+
+      this.messageHandlers.set(`VOICE_RESPONSE_${requestId}`, responseHandler);
+
+      const voiceRequest: VoiceRequest & { requestId: string } = {
+        type: "VOICE_REQUEST",
+        action: "start_recording",
+        requestId,
+        options: {
+          maxDuration: 60,
+          audioFormat: "webm",
+          quality: "medium",
+          ...options,
+        },
+      };
+
+      this.sendMessageToParent(voiceRequest);
+
+      setTimeout(() => {
+        if (this.messageHandlers.has(`VOICE_RESPONSE_${requestId}`)) {
+          this.messageHandlers.delete(`VOICE_RESPONSE_${requestId}`);
+          reject(new Error("Voice recording start timeout"));
+        }
+      }, 10000); // 10 second timeout
+    });
+  }
+
+  public stopVoiceRecording(): Promise<VoiceResponse> {
+    return new Promise((resolve, reject) => {
+      const requestId = `voice_stop_${Date.now()}_${Math.random()}`;
+
+      const responseHandler = (message: CommunicationMessage) => {
+        if (
+          message.type === "VOICE_RESPONSE" &&
+          message.requestId === requestId
+        ) {
+          this.messageHandlers.delete(`VOICE_RESPONSE_${requestId}`);
+          resolve(message as VoiceResponse);
+        }
+      };
+
+      this.messageHandlers.set(`VOICE_RESPONSE_${requestId}`, responseHandler);
+
+      const voiceRequest: VoiceRequest & { requestId: string } = {
+        type: "VOICE_REQUEST",
+        action: "stop_recording",
+        requestId,
+      };
+
+      this.sendMessageToParent(voiceRequest);
+
+      setTimeout(() => {
+        if (this.messageHandlers.has(`VOICE_RESPONSE_${requestId}`)) {
+          this.messageHandlers.delete(`VOICE_RESPONSE_${requestId}`);
+          reject(new Error("Voice recording stop timeout"));
+        }
+      }, 15000); // 15 second timeout
+    });
   }
 
   public requestVoiceRecord(
