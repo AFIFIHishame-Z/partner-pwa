@@ -99,7 +99,7 @@ const Exercise1 = () => {
             const newDuration = Math.min(prev + 0.1, MAX_RECORDING_DURATION);
 
             // Auto-stop when reaching 59 seconds
-            if (newDuration >= 59 && !isStoppingRef.current && isRecording) {
+            if (newDuration >= 58 && !isStoppingRef.current && isRecording) {
               clearInterval(timer);
               (window as any).recordingTimer = null;
               // Stop recording automatically at 59s and send message to parent
@@ -107,7 +107,7 @@ const Exercise1 = () => {
               handleStopRecording().catch((error) => {
                 console.error("Error auto-stopping recording:", error);
               });
-              return 59; // Set duration to 59s
+              return 58; // Set duration to 59s
             }
             return newDuration;
           });
