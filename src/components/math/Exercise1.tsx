@@ -21,11 +21,23 @@ const Exercise1 = () => {
   // const [debugStatus, setDebugStatus] = useState<string>("");
   const isStoppingRef = useRef(false);
   const MAX_RECORDING_DURATION = 60; // Maximum recording duration in seconds
+  const [showResultVideo, setShowResultVideo] = useState(false);
+  const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
+  const resultVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     generateRandomProblem();
     checkSpeechSupport();
   }, []);
+
+  useEffect(() => {
+    if (showResultVideo && resultVideoRef.current) {
+      resultVideoRef.current.currentTime = 0;
+      resultVideoRef.current.play().catch((error) => {
+        console.error("Error playing video:", error);
+      });
+    }
+  }, [showResultVideo]);
 
   const checkSpeechSupport = () => {
     // Check if speech synthesis is available
@@ -452,6 +464,37 @@ const Exercise1 = () => {
     iframeCommunication.requestNavigation("/worldmap");
   };
 
+  const handleCheckAnswer = () => {
+    if (!userInput.trim()) {
+      // No answer entered
+      return;
+    }
+
+    const userAnswer = parseInt(userInput.trim(), 10);
+    const isCorrect = userAnswer === mathProblem.answer;
+
+    setIsCorrectAnswer(isCorrect);
+    setShowResultVideo(true);
+
+    // Reset video to start if it exists
+    if (resultVideoRef.current) {
+      resultVideoRef.current.currentTime = 0;
+      resultVideoRef.current.play();
+    }
+  };
+
+  const handleVideoEnded = () => {
+    setShowResultVideo(false);
+
+    if (isCorrectAnswer) {
+      // Correct answer: generate new problem
+      generateRandomProblem();
+    } else {
+      // Incorrect answer: clear input field
+      setUserInput("");
+    }
+  };
+
   return (
     <div
       className="w-full h-screen bg-cover bg-center bg-no-repeat relative"
@@ -558,9 +601,30 @@ const Exercise1 = () => {
         <img
           src="/media/icons/Frame 408.png"
           alt="Icon"
-          className="w-14 h-14 rounded-full  shadow-lg"
+          className="w-14 h-14 rounded-full shadow-lg cursor-pointer hover:scale-105 transition-transform"
+          onClick={handleCheckAnswer}
         />
       </div>
+
+      {/* Video in bottom left corner */}
+      {!showResultVideo && (
+        <div className="absolute bottom-4 left-4 z-10">
+          <video
+            src="/media/videos/WhatsApp Video 2025-10-30 at 12.31.19 PM.mp4"
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="rounded-lg shadow-lg"
+            style={{
+              maxWidth: "200px",
+              maxHeight: "200px",
+              position: "relative",
+              top: "20px",
+            }}
+          />
+        </div>
+      )}
 
       {/* Calculator in center */}
       <div className="flex items-center justify-center h-full">
@@ -588,9 +652,9 @@ const Exercise1 = () => {
                 value={userInput}
                 onChange={(e) => setUserInput(e.target.value)}
                 placeholder="Entrez le résultat"
-                className="w-full h-12 px-4 pr-12 text-center text-lg bg-white/90 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none placeholder-gray-500"
+                className="w-full h-12 px-4  text-center text-lg bg-white/90 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none placeholder-gray-500"
               />
-              {userInput && (
+              {/* {userInput && (
                 <button
                   onClick={() => setUserInput("")}
                   className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-red-400 text-white rounded-full hover:bg-red-600 transition-colors flex items-center justify-center font-bold"
@@ -603,7 +667,7 @@ const Exercise1 = () => {
                 >
                   ×
                 </button>
-              )}
+              )} */}
             </div>
           </div>
         </div>
@@ -712,11 +776,39 @@ const Exercise1 = () => {
 
       {/* Voice Recording Popup - WhatsApp Style */}
       {showVoicePopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={(e) => {
+            // Prevent closing dialog when clicking outside during recording
+            if (isRecording) {
+              e.stopPropagation();
+              return;
+            }
+            // Only close if clicking on the backdrop (not the dialog content)
+            if (e.target === e.currentTarget) {
+              if ((window as any).recordingTimer) {
+                clearInterval((window as any).recordingTimer);
+                (window as any).recordingTimer = null;
+              }
+              setShowVoicePopup(false);
+              setIsRecording(false);
+              isStoppingRef.current = false;
+              setRecordingDuration(0);
+              if (capturedVoice && capturedVoice.startsWith("blob:")) {
+                URL.revokeObjectURL(capturedVoice);
+              }
+              setCapturedVoice(null);
+            }
+          }}
+        >
           <div className="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 relative shadow-2xl">
             {/* Close button */}
             <button
               onClick={() => {
+                // Prevent closing when recording
+                if (isRecording) {
+                  return;
+                }
                 if ((window as any).recordingTimer) {
                   clearInterval((window as any).recordingTimer);
                   (window as any).recordingTimer = null;
@@ -732,7 +824,13 @@ const Exercise1 = () => {
                 setCapturedVoice(null);
                 // setBase64Voice(null);
               }}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100"
+              disabled={isRecording}
+              className={`absolute top-4 right-4 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full transition-all ${
+                isRecording
+                  ? "text-gray-300 cursor-not-allowed opacity-50"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 cursor-pointer"
+              }`}
+              title={isRecording ? "Enregistrement en cours..." : "Fermer"}
             >
               ×
             </button>
@@ -901,6 +999,49 @@ const Exercise1 = () => {
           </div>
         </div>
       )}
+
+      {/* Result Video Overlay with Animation */}
+      {showResultVideo && (
+        <div
+          className="absolute bottom-4 left-4 z-50"
+          style={{
+            animation: "slideUp 0.5s ease-out forwards",
+          }}
+        >
+          <video
+            ref={resultVideoRef}
+            src={
+              isCorrectAnswer
+                ? "/media/videos/WhatsApp Video 2025-10-30 at 12.31.27 PM.mp4"
+                : "/media/videos/WhatsApp Video 2025-10-30 at 12.31.38 PM.mp4"
+            }
+            autoPlay
+            muted
+            playsInline
+            onEnded={handleVideoEnded}
+            className="rounded-lg shadow-lg"
+            style={{
+              maxWidth: "200px",
+              maxHeight: "200px",
+              position: "relative",
+              top: "20px",
+            }}
+          />
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideUp {
+          from {
+            transform: translateY(100px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+      `}</style>
     </div>
   );
 };
