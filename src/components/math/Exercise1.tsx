@@ -472,7 +472,9 @@ const Exercise1 = () => {
 
     const userAnswer = parseInt(userInput.trim(), 10);
     const isCorrect = userAnswer === mathProblem.answer;
-
+    if (!isCorrect) {
+      setUserInput("");
+    }
     setIsCorrectAnswer(isCorrect);
     setShowResultVideo(true);
 
