@@ -23,7 +23,6 @@ const Exercise1 = () => {
   const MAX_RECORDING_DURATION = 60; // Maximum recording duration in seconds
   const [showResultVideo, setShowResultVideo] = useState(false);
   const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
-  const resultVideoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     generateRandomProblem();
@@ -31,13 +30,19 @@ const Exercise1 = () => {
   }, []);
 
   useEffect(() => {
-    if (showResultVideo && resultVideoRef.current) {
-      resultVideoRef.current.currentTime = 0;
-      resultVideoRef.current.play().catch((error) => {
-        console.error("Error playing video:", error);
-      });
+    if (showResultVideo) {
+      // Hide GIF after 3 seconds (adjust duration as needed)
+      const timer = setTimeout(() => {
+        setShowResultVideo(false);
+        if (isCorrectAnswer) {
+          // Correct answer: generate new problem
+          generateRandomProblem();
+        }
+      }, 3000);
+
+      return () => clearTimeout(timer);
     }
-  }, [showResultVideo]);
+  }, [showResultVideo, isCorrectAnswer]);
 
   const checkSpeechSupport = () => {
     // Check if speech synthesis is available
@@ -477,24 +482,6 @@ const Exercise1 = () => {
     }
     setIsCorrectAnswer(isCorrect);
     setShowResultVideo(true);
-
-    // Reset video to start if it exists
-    if (resultVideoRef.current) {
-      resultVideoRef.current.currentTime = 0;
-      resultVideoRef.current.play();
-    }
-  };
-
-  const handleVideoEnded = () => {
-    setShowResultVideo(false);
-
-    if (isCorrectAnswer) {
-      // Correct answer: generate new problem
-      generateRandomProblem();
-    } else {
-      // Incorrect answer: clear input field
-      setUserInput("");
-    }
   };
 
   return (
@@ -608,21 +595,20 @@ const Exercise1 = () => {
         />
       </div>
 
-      {/* Video in bottom left corner */}
+      {/* GIF in bottom left corner */}
       {!showResultVideo && (
         <div className="absolute bottom-4 left-4 z-10">
-          <video
-            src="/media/videos/WhatsApp Video 2025-10-30 at 12.31.19 PM.mp4"
-            autoPlay
-            loop
-            muted
-            playsInline
+          <img
+            src="/media/gifs/normal-unscreen.gif"
+            alt="Normal"
             className="rounded-lg shadow-lg"
             style={{
-              maxWidth: "200px",
+              maxWidth: "130px",
               maxHeight: "200px",
               position: "relative",
               top: "20px",
+              left: "20px",
+              boxShadow: "none",
             }}
           />
         </div>
@@ -1002,7 +988,7 @@ const Exercise1 = () => {
         </div>
       )}
 
-      {/* Result Video Overlay with Animation */}
+      {/* Result GIF Overlay with Animation */}
       {showResultVideo && (
         <div
           className="absolute bottom-4 left-4 z-50"
@@ -1010,23 +996,21 @@ const Exercise1 = () => {
             animation: "slideUp 0.5s ease-out forwards",
           }}
         >
-          <video
-            ref={resultVideoRef}
+          <img
             src={
               isCorrectAnswer
-                ? "/media/videos/WhatsApp Video 2025-10-30 at 12.31.27 PM.mp4"
-                : "/media/videos/WhatsApp Video 2025-10-30 at 12.31.38 PM.mp4"
+                ? "/media/gifs/happy-unscreen.gif"
+                : "/media/gifs/triste-unscreen.gif"
             }
-            autoPlay
-            muted
-            playsInline
-            onEnded={handleVideoEnded}
+            alt={isCorrectAnswer ? "Happy" : "Sad"}
             className="rounded-lg shadow-lg"
             style={{
-              maxWidth: "200px",
+              maxWidth: "130px",
               maxHeight: "200px",
               position: "relative",
-              top: "20px",
+              top: isCorrectAnswer ? "20px" : "15px",
+              left: "20px",
+              boxShadow: "none",
             }}
           />
         </div>
