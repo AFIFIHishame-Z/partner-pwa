@@ -28,6 +28,7 @@ const Exercise1 = () => {
     firstName?: string;
     grade?: string | number;
   } | null>(null);
+  const [showStudentInfo, setShowStudentInfo] = useState(false);
   const hasHandledTokenRef = useRef(false);
 
   useEffect(() => {
@@ -64,8 +65,8 @@ const Exercise1 = () => {
         firstName: event.data.payload?.firstName,
         grade: event.data.payload?.grade,
       });
-      alert(`Token reçu: ${token}`);
-      alert("Le token est en cours de validation...");
+      //alert(`Token reçu: ${token}`);
+      //alert("Le token est en cours de validation...");
 
       setTimeout(() => {
         setIsTokenValidated(true);
@@ -516,6 +517,13 @@ const Exercise1 = () => {
     iframeCommunication.requestNavigation("/worldmap");
   };
 
+  const handleAvatarClick = () => {
+    if (!studentInfo) {
+      return;
+    }
+    setShowStudentInfo((prev) => !prev);
+  };
+
   const handleCheckAnswer = () => {
     if (!userInput.trim()) {
       // No answer entered
@@ -548,7 +556,7 @@ const Exercise1 = () => {
         backgroundImage: "url('/media/background/Exercices-apres.jpg')",
       }}
     >
-      {studentInfo && (
+      {studentInfo && showStudentInfo && (
         <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-white/80 backdrop-blur-md text-blue-900 px-6 py-3 rounded-full shadow-lg z-20 text-sm font-semibold flex gap-4">
           <span>{`Élève: ${studentInfo.firstName || "Inconnu"}`}</span>
           <span>{`Classe: ${studentInfo.grade || "N/A"}`}</span>
@@ -601,7 +609,9 @@ const Exercise1 = () => {
         <img
           src="/media/avatars/Group 217.png"
           alt="Avatar"
-          className="w-10 h-10 rounded-full  shadow-lg"
+          className="w-10 h-10 rounded-full shadow-lg cursor-pointer hover:scale-105 transition-transform"
+          onClick={handleAvatarClick}
+          title="Afficher les informations de l'élève"
         />
       </div>
 
