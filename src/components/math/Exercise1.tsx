@@ -23,10 +23,57 @@ const Exercise1 = () => {
   const MAX_RECORDING_DURATION = 60; // Maximum recording duration in seconds
   const [showResultVideo, setShowResultVideo] = useState(false);
   const [isCorrectAnswer, setIsCorrectAnswer] = useState(false);
+  const [isTokenValidated, setIsTokenValidated] = useState(false);
+  const [studentInfo, setStudentInfo] = useState<{
+    firstName?: string;
+    grade?: string | number;
+  } | null>(null);
+  const hasHandledTokenRef = useRef(false);
 
   useEffect(() => {
     generateRandomProblem();
     checkSpeechSupport();
+  }, []);
+
+  useEffect(() => {
+    const handleSsoToken = (event: MessageEvent) => {
+      if (
+        hasHandledTokenRef.current ||
+        !event.data ||
+        event.data.type !== "sso_token"
+      ) {
+        return;
+      }
+
+      // Optional origin check – adjust to the exact expected origin if needed
+      if (
+        event.origin &&
+        event.origin !== "https://sousApp.com" &&
+        event.origin !== "https://www.sousApp.com"
+      ) {
+        return;
+      }
+
+      const token = event.data.payload?.token;
+      if (!token) {
+        return;
+      }
+
+      hasHandledTokenRef.current = true;
+      setStudentInfo({
+        firstName: event.data.payload?.firstName,
+        grade: event.data.payload?.grade,
+      });
+      alert(`Token reçu: ${token}`);
+      alert("Le token est en cours de validation...");
+
+      setTimeout(() => {
+        setIsTokenValidated(true);
+      }, 3000);
+    };
+
+    window.addEventListener("message", handleSsoToken);
+    return () => window.removeEventListener("message", handleSsoToken);
   }, []);
 
   useEffect(() => {
@@ -484,6 +531,16 @@ const Exercise1 = () => {
     setShowResultVideo(true);
   };
 
+  if (!isTokenValidated) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-gradient-to-b from-blue-50 to-white text-center px-6">
+        <p className="text-lg font-semibold text-blue-900">
+          En attente d'un jeton sécurisé depuis l'application parente…
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div
       className="w-full h-screen bg-cover bg-center bg-no-repeat relative"
@@ -491,6 +548,12 @@ const Exercise1 = () => {
         backgroundImage: "url('/media/background/Exercices-apres.jpg')",
       }}
     >
+      {studentInfo && (
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-white/80 backdrop-blur-md text-blue-900 px-6 py-3 rounded-full shadow-lg z-20 text-sm font-semibold flex gap-4">
+          <span>{`Élève: ${studentInfo.firstName || "Inconnu"}`}</span>
+          <span>{`Classe: ${studentInfo.grade || "N/A"}`}</span>
+        </div>
+      )}
       {/* Icons and Pattern in top left corner */}
       <div className="absolute top-4 left-4 z-10 flex items-center gap-3">
         <img
