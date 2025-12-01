@@ -49,9 +49,9 @@ const Exercise1 = () => {
       // Optional origin check – adjust to the exact expected origin if needed
       if (
         event.origin &&
-        event.origin !== "http://localhost:5173" &&
-        event.origin !== "http://localhost:5173"
+        event.origin !== "https://superapp-front.azurewebsites.net"
       ) {
+        alert("Origin non autorisée");
         return;
       }
 
