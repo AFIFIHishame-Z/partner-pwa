@@ -24,6 +24,7 @@ export interface CameraResponse {
 export interface VoiceRequest {
   type: "VOICE_REQUEST";
   action: "start_recording" | "stop_recording";
+  returnText?:boolean,
   options?: {
     maxDuration?: number; // in seconds
     audioFormat?: "mp3" | "wav" | "webm";
@@ -412,6 +413,7 @@ class IframeCommunicationService {
       const voiceRequest: VoiceRequest & { requestId: string } = {
         type: "VOICE_REQUEST",
         action: "stop_recording",
+        returnText:true,
         requestId,
       };
 

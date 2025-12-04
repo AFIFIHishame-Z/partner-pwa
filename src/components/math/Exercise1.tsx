@@ -47,6 +47,7 @@ const Exercise1 = () => {
       }
 
       // Optional origin check – adjust to the exact expected origin if needed
+      
       // if (
       //   event.origin &&
       //   event.origin !== "https://superapp-front.azurewebsites.net"
