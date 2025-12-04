@@ -43,6 +43,14 @@ export interface VoiceResponse {
   error?: string;
 }
 
+export interface SpeechRecognitionResponse  {
+  requestId?: string;
+  type: "SPEECH_RECOGNITION_RESPONSE" ;
+  success: boolean;
+  text: string;
+  error?: string;
+}
+
 export interface NavigationRequest {
   type: "NAVIGATION_REQUEST";
   route: string;
@@ -165,6 +173,20 @@ class IframeCommunicationService {
           );
         }
       }
+
+
+      if (message.type === "SPEECH_RECOGNITION_RESPONSE") {
+        console.log(
+          "🎤 IframeCommunication: Received SPEECH_RECOGNITION_RESPONSE message:",
+          message
+        );
+        console.log("🎤 IframeCommunication: Message data:", message.data);
+        console.log(
+          "🎤 IframeCommunication: Message success:",
+          message.success
+        );
+      }
+
 
       // Check for general handler
       if (message.type && this.messageHandlers.has(message.type)) {
