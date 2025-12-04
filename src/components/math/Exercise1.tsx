@@ -47,7 +47,7 @@ const Exercise1 = () => {
       }
 
       // Optional origin check – adjust to the exact expected origin if needed
-      
+
       // if (
       //   event.origin &&
       //   event.origin !== "https://superapp-front.azurewebsites.net"
@@ -540,6 +540,14 @@ const Exercise1 = () => {
     setShowResultVideo(true);
   };
 
+
+  const [speechRecogResp,setSpeechRecogResp] = useState<any>();
+  const handleSpeechRecognition = async () =>{
+
+    const response = await iframeCommunication.requestSpeechRecognition();
+setSpeechRecogResp(response);
+  }
+
   if (!isTokenValidated) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-b from-blue-50 to-white text-center px-6">
@@ -596,7 +604,9 @@ const Exercise1 = () => {
           className="font-medium drop-shadow-lg"
           style={{ color: "#057AA9", fontSize: "0.7rem" }}
         >
-          Nom de la sous-competence
+          {
+            speechRecogResp && <>{JSON.stringify(speechRecogResp)}</>
+          }
         </span>
       </div>
 
@@ -644,7 +654,7 @@ const Exercise1 = () => {
         </div>
         <div
           className="w-14 h-14 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-105 transition-transform flex items-center justify-center bg-white/20 backdrop-blur-sm"
-          onClick={handleMicrophoneClick}
+          onClick={handleSpeechRecognition}
         >
           <span
             className="text-2xl"
