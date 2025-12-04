@@ -562,6 +562,77 @@ class IframeCommunicationService {
 
     this.sendMessageToParent(navigationRequest);
   }
+
+
+
+
+   public requestSpeechRecognition(
+    
+  ): Promise<SpeechRecognitionResponse> {
+    return new Promise((resolve, reject) => {
+      const requestId = `voice_${Date.now()}_${Math.random()}`;
+      console.log(
+        "IframeCommunication: Starting voice request with ID:",
+        requestId
+      );
+
+      // Set up response handler
+      const responseHandler = (message: CommunicationMessage) => {
+        console.log(
+          "IframeCommunication: Received voice response message:",
+          message
+        );
+        console.log("IframeCommunication: Expected requestId:", requestId);
+        console.log(
+          "IframeCommunication: Received requestId:",
+          message.requestId
+        );
+
+        if (
+          message.type === "SPEECH_RECOGNITION_RESPONSE"
+        ) {
+          console.log(
+            "IframeCommunication: Voice response matches request ID, resolving promise"
+          );
+          this.messageHandlers.delete(`VOICE_RESPONSE_${requestId}`);
+          resolve(message as SpeechRecognitionResponse);
+        } else {
+          console.log(
+            "IframeCommunication: Voice response does not match request ID, ignoring"
+          );
+        }
+      };
+
+      this.messageHandlers.set(`VOICE_RESPONSE_${requestId}`, responseHandler);
+
+      // Send voice request to parent
+      const speechRecognitionRequest: any = {
+        type: "SPEECH_RECOGNITION",
+        requestId,
+        local:String
+      };
+
+      console.log(
+        "IframeCommunication: Sending voice request to parent:",
+        speechRecognitionRequest
+      );
+      this.sendMessageToParent(speechRecognitionRequest);
+
+      // Set timeout for request
+      setTimeout(() => {
+        if (this.messageHandlers.has(`VOICE_RESPONSE_${requestId}`)) {
+          console.error(
+            "IframeCommunication: Voice request timeout for ID:",
+            requestId
+          );
+          this.messageHandlers.delete(`VOICE_RESPONSE_${requestId}`);
+          reject(new Error("Voice request timeout"));
+        }
+      }, 120000); // 2 minute timeout for voice recording
+    });
+  }
+
+
 }
 
 // Export singleton instance
