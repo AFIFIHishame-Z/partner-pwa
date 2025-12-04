@@ -133,12 +133,12 @@ const Exercise1 = () => {
     }
   };
 
-  const handleMicrophoneClick = () => {
-    setShowVoicePopup(true);
-    setRecordingDuration(0);
-    // setDebugStatus("");
-    // setBase64Voice(null);
-  };
+  // const handleMicrophoneClick = () => {
+  //   setShowVoicePopup(true);
+  //   setRecordingDuration(0);
+  //   // setDebugStatus("");
+  //   // setBase64Voice(null);
+  // };
 
   const handleStartRecording = async () => {
     try {
