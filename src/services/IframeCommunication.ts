@@ -596,7 +596,7 @@ class IframeCommunicationService {
         type: "SPEECH_RECOGNITION",
         requestId,
         local: locale,
-        useDefaultUI,
+        useDefaultUI: true,
       };
 
       this.sendMessageToParent(speechRecognitionRequest);
