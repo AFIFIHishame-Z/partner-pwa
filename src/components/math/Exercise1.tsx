@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef } from "react";
-import { iframeCommunication } from "../../services/IframeCommunication";
+import {
+  iframeCommunication,
+  type SpeechRecognitionResponse,
+} from "../../services/IframeCommunication";
 
 const Exercise1 = () => {
   const [mathProblem, setMathProblem] = useState({
@@ -30,6 +33,7 @@ const Exercise1 = () => {
   } | null>(null);
   const [showStudentInfo, setShowStudentInfo] = useState(false);
   const hasHandledTokenRef = useRef(false);
+  const [isListening, setIsListening] = useState(false);
 
   useEffect(() => {
     generateRandomProblem();
@@ -541,12 +545,29 @@ const Exercise1 = () => {
   };
 
 
-  const [speechRecogResp,setSpeechRecogResp] = useState<any>();
-  const handleSpeechRecognition = async () =>{
-
-    const response = await iframeCommunication.requestSpeechRecognition();
-setSpeechRecogResp(response);
-  }
+  const [speechRecogResp, setSpeechRecogResp] =
+    useState<SpeechRecognitionResponse | null>(null);
+  const [speechRecogError, setSpeechRecogError] = useState<string | null>(null);
+  const handleSpeechRecognition = async () => {
+    try {
+      setIsListening(true);
+      setSpeechRecogError(null);
+      const locale =
+        (navigator.language || navigator.languages?.[0]) ?? "fr-FR";
+      const response = await iframeCommunication.requestSpeechRecognition(locale);
+      setSpeechRecogResp(response);
+      if (!response.success) {
+        setSpeechRecogError(response.error || "Échec de la reconnaissance vocale");
+      }
+    } catch (error) {
+      setSpeechRecogResp(null);
+      setSpeechRecogError(
+        error instanceof Error ? error.message : "Erreur inconnue"
+      );
+    } finally {
+      setIsListening(false);
+    }
+  };
 
   if (!isTokenValidated) {
     return (
@@ -600,14 +621,25 @@ setSpeechRecogResp(response);
           alt="Pattern"
           className="w-auto h-auto"
         />
-        <span
-          className="font-medium drop-shadow-lg"
-          style={{ color: "#057AA9", fontSize: "0.7rem" }}
-        >
-          {
-            speechRecogResp && <>{JSON.stringify(speechRecogResp)}</>
-          }
-        </span>
+        {speechRecogResp && (
+          <span
+            className="font-medium drop-shadow-lg"
+            style={{ color: "#057AA9", fontSize: "0.8rem" }}
+          >
+            {speechRecogResp.success
+              ? `Texte reconnu: ${speechRecogResp.text}`
+              : `Erreur: ${speechRecogResp.error || "Aucune"}`
+            }
+          </span>
+        )}
+        {speechRecogError && (
+          <span
+            className="font-medium drop-shadow-lg text-red-600"
+            style={{ fontSize: "0.8rem" }}
+          >
+            {speechRecogError}
+          </span>
+        )}
       </div>
 
       {/* Avatar and Pattern in top right corner */}
@@ -660,11 +692,11 @@ setSpeechRecogResp(response);
             className="text-2xl"
             style={{
               fontSize: "2rem",
-              top: isRecording ? "-3px" : "-7px",
+              top: isListening ? "-3px" : "-7px",
               position: "relative",
             }}
           >
-            {isRecording ? "⏳" : "🎤"}
+            {isListening ? "⏳" : "🎤"}
           </span>
         </div>
       </div>

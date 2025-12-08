@@ -185,6 +185,17 @@ class IframeCommunicationService {
           "🎤 IframeCommunication: Message success:",
           message.success
         );
+
+        if (message.requestId) {
+          const specificHandlerKey = `SPEECH_RECOGNITION_RESPONSE_${message.requestId}`;
+          if (this.messageHandlers.has(specificHandlerKey)) {
+            const handler = this.messageHandlers.get(specificHandlerKey);
+            if (handler) {
+              handler(message);
+              return;
+            }
+          }
+        }
       }
 
 
@@ -566,69 +577,39 @@ class IframeCommunicationService {
 
 
 
-   public requestSpeechRecognition(
-    
+  public requestSpeechRecognition(
+    locale: string = "fr-FR"
   ): Promise<SpeechRecognitionResponse> {
     return new Promise((resolve, reject) => {
-      const requestId = `voice_${Date.now()}_${Math.random()}`;
-      console.log(
-        "IframeCommunication: Starting voice request with ID:",
-        requestId
-      );
+      const requestId = `speech_${Date.now()}_${Math.random()}`;
+      const handlerKey = `SPEECH_RECOGNITION_RESPONSE_${requestId}`;
 
-      // Set up response handler
       const responseHandler = (message: CommunicationMessage) => {
-        console.log(
-          "IframeCommunication: Received voice response message:",
-          message
-        );
-        console.log("IframeCommunication: Expected requestId:", requestId);
-        console.log(
-          "IframeCommunication: Received requestId:",
-          message.requestId
-        );
-
         if (
-          message.type === "SPEECH_RECOGNITION_RESPONSE"
+          message.type === "SPEECH_RECOGNITION_RESPONSE" &&
+          message.requestId === requestId
         ) {
-          console.log(
-            "IframeCommunication: Voice response matches request ID, resolving promise"
-          );
-          this.messageHandlers.delete(`VOICE_RESPONSE_${requestId}`);
+          this.messageHandlers.delete(handlerKey);
           resolve(message as SpeechRecognitionResponse);
-        } else {
-          console.log(
-            "IframeCommunication: Voice response does not match request ID, ignoring"
-          );
         }
       };
 
-      this.messageHandlers.set(`VOICE_RESPONSE_${requestId}`, responseHandler);
+      this.messageHandlers.set(handlerKey, responseHandler);
 
-      // Send voice request to parent
-      const speechRecognitionRequest: any = {
+      const speechRecognitionRequest = {
         type: "SPEECH_RECOGNITION",
         requestId,
-        local:String
+        local: locale,
       };
 
-      console.log(
-        "IframeCommunication: Sending voice request to parent:",
-        speechRecognitionRequest
-      );
       this.sendMessageToParent(speechRecognitionRequest);
 
-      // Set timeout for request
       setTimeout(() => {
-        if (this.messageHandlers.has(`VOICE_RESPONSE_${requestId}`)) {
-          console.error(
-            "IframeCommunication: Voice request timeout for ID:",
-            requestId
-          );
-          this.messageHandlers.delete(`VOICE_RESPONSE_${requestId}`);
-          reject(new Error("Voice request timeout"));
+        if (this.messageHandlers.has(handlerKey)) {
+          this.messageHandlers.delete(handlerKey);
+          reject(new Error("Speech recognition timeout"));
         }
-      }, 120000); // 2 minute timeout for voice recording
+      }, 60000); // 60 second timeout
     });
   }
 
