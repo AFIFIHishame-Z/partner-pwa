@@ -591,7 +591,7 @@ class IframeCommunicationService {
       };
 
       this.messageHandlers.set(handlerKey, responseHandler);
-
+      console.log("useDefaultUI", useDefaultUI);
       const speechRecognitionRequest = {
         type: "SPEECH_RECOGNITION",
         requestId,
