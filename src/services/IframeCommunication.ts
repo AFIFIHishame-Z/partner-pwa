@@ -578,7 +578,8 @@ class IframeCommunicationService {
 
 
   public requestSpeechRecognition(
-    locale: string = "fr-FR"
+    locale: string = "fr-FR",
+    useDefaultUI: boolean = true
   ): Promise<SpeechRecognitionResponse> {
     return new Promise((resolve, reject) => {
       const requestId = `speech_${Date.now()}_${Math.random()}`;
@@ -600,6 +601,7 @@ class IframeCommunicationService {
         type: "SPEECH_RECOGNITION",
         requestId,
         local: locale,
+        useDefaultUI,
       };
 
       this.sendMessageToParent(speechRecognitionRequest);

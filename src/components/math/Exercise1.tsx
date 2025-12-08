@@ -544,28 +544,68 @@ const Exercise1 = () => {
     setShowResultVideo(true);
   };
 
-
   const [speechRecogResp, setSpeechRecogResp] =
     useState<SpeechRecognitionResponse | null>(null);
   const [speechRecogError, setSpeechRecogError] = useState<string | null>(null);
+  const [showSpeechRecognitionPopup, setShowSpeechRecognitionPopup] =
+    useState(false);
+  const [recognizedText, setRecognizedText] = useState<string>("");
+
   const handleSpeechRecognition = async () => {
     try {
       setIsListening(true);
       setSpeechRecogError(null);
+      setRecognizedText("");
+      setShowSpeechRecognitionPopup(true);
       const locale = "ar-SA";
-      const response = await iframeCommunication.requestSpeechRecognition(locale);
+      const response = await iframeCommunication.requestSpeechRecognition(
+        locale,
+        false // useDefaultUI: false - partner app will create its own UI
+      );
       setSpeechRecogResp(response);
-      if (!response.success) {
-        setSpeechRecogError(response.error || "Échec de la reconnaissance vocale");
+      if (response.success && response.text) {
+        setRecognizedText(response.text);
+        // Auto-close after showing the result for 2 seconds
+        setTimeout(() => {
+          setShowSpeechRecognitionPopup(false);
+          setIsListening(false);
+          // Optionally, you can use the recognized text here
+          // For example, set it as user input:
+          if (response.text) {
+            setUserInput(response.text);
+          }
+        }, 2000);
+      } else {
+        setSpeechRecogError(
+          response.error || "Échec de la reconnaissance vocale"
+        );
+        // Auto-close error after 3 seconds
+        setTimeout(() => {
+          setShowSpeechRecognitionPopup(false);
+          setIsListening(false);
+        }, 3000);
       }
     } catch (error) {
       setSpeechRecogResp(null);
       setSpeechRecogError(
         error instanceof Error ? error.message : "Erreur inconnue"
       );
+      // Auto-close error after 3 seconds
+      setTimeout(() => {
+        setShowSpeechRecognitionPopup(false);
+        setIsListening(false);
+      }, 3000);
     } finally {
-      setIsListening(false);
+      // Don't set isListening to false here if we're showing the popup
+      // It will be set to false in the setTimeout above
     }
+  };
+
+  const handleCloseSpeechRecognitionPopup = () => {
+    setShowSpeechRecognitionPopup(false);
+    setIsListening(false);
+    setSpeechRecogError(null);
+    setRecognizedText("");
   };
 
   if (!isTokenValidated) {
@@ -620,18 +660,18 @@ const Exercise1 = () => {
           alt="Pattern"
           className="w-auto h-auto"
         />
-        {speechRecogResp && (
+        {/* Show recognized text in top center when popup is closed */}
+        {speechRecogResp && !showSpeechRecognitionPopup && (
           <span
             className="font-medium drop-shadow-lg"
             style={{ color: "#057AA9", fontSize: "0.8rem" }}
           >
             {speechRecogResp.success
               ? `Texte reconnu: ${speechRecogResp.text}`
-              : `Erreur: ${speechRecogResp.error || "Aucune"}`
-            }
+              : `Erreur: ${speechRecogResp.error || "Aucune"}`}
           </span>
         )}
-        {speechRecogError && (
+        {speechRecogError && !showSpeechRecognitionPopup && (
           <span
             className="font-medium drop-shadow-lg text-red-600"
             style={{ fontSize: "0.8rem" }}
@@ -1099,6 +1139,188 @@ const Exercise1 = () => {
                 ? "Cliquez pour enregistrer à nouveau"
                 : "Cliquez pour enregistrer"}
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Speech Recognition Popup - Custom UI */}
+      {showSpeechRecognitionPopup && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          onClick={(e) => {
+            // Prevent closing dialog when listening
+            if (isListening && !recognizedText && !speechRecogError) {
+              e.stopPropagation();
+              return;
+            }
+            // Only close if clicking on the backdrop (not the dialog content)
+            if (e.target === e.currentTarget) {
+              handleCloseSpeechRecognitionPopup();
+            }
+          }}
+        >
+          <div className="bg-white rounded-2xl p-8 max-w-sm w-full mx-4 relative shadow-2xl">
+            {/* Close button */}
+            <button
+              onClick={handleCloseSpeechRecognitionPopup}
+              disabled={isListening && !recognizedText && !speechRecogError}
+              className={`absolute top-4 right-4 text-2xl font-bold w-8 h-8 flex items-center justify-center rounded-full transition-all ${
+                isListening && !recognizedText && !speechRecogError
+                  ? "text-gray-300 cursor-not-allowed opacity-50"
+                  : "text-gray-500 hover:text-gray-700 hover:bg-gray-100 cursor-pointer"
+              }`}
+              title={
+                isListening && !recognizedText && !speechRecogError
+                  ? "Reconnaissance en cours..."
+                  : "Fermer"
+              }
+            >
+              ×
+            </button>
+
+            {/* Title */}
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-semibold text-gray-800">
+                Reconnaissance Vocale
+              </h2>
+            </div>
+
+            {/* Listening Status */}
+            {isListening && !recognizedText && !speechRecogError && (
+              <div className="text-center mb-6">
+                <div className="flex justify-center items-center mb-4">
+                  {/* Animated microphone icon */}
+                  <div className="relative">
+                    <div
+                      className={`w-20 h-20 rounded-full flex items-center justify-center transition-all duration-200 ${
+                        isListening
+                          ? "bg-blue-500 scale-110 animate-pulse"
+                          : "bg-gray-300"
+                      }`}
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-10 w-10 text-white"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path d="M12 14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2s-2 .9-2 2v6c0 1.1.9 2 2 2zm5-2v-1c0-2.8-2.2-5-5-5S7 8.2 7 11v1c0 .6-.4 1-1 1s-1-.4-1-1v-1c0-3.9 3.1-7 7-7s7 3.1 7 7v1c0 .6-.4 1-1 1s-1-.4-1-1zm-5 4c-2.2 0-4-1.8-4-4v-2h2v2c0 1.1.9 2 2 2s2-.9 2-2v-2h2v2c0 2.2-1.8 4-4 4z" />
+                      </svg>
+                    </div>
+                    {/* Pulsing rings animation */}
+                    <div className="absolute inset-0 rounded-full border-4 border-blue-400 animate-ping opacity-75"></div>
+                    <div
+                      className="absolute inset-0 rounded-full border-4 border-blue-300 animate-ping opacity-50"
+                      style={{ animationDelay: "0.5s" }}
+                    ></div>
+                  </div>
+                </div>
+                <p className="text-sm text-blue-600 font-medium animate-pulse">
+                  Écoute en cours... Parlez maintenant
+                </p>
+                {/* Waveform animation */}
+                <div className="flex items-center justify-center gap-1 mt-4 h-8">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div
+                      key={i}
+                      className="w-1 bg-blue-500 rounded-full animate-pulse"
+                      style={{
+                        height: `${20 + Math.random() * 30}px`,
+                        animationDelay: `${i * 0.1}s`,
+                        animationDuration: "0.8s",
+                      }}
+                    ></div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Success - Recognized Text */}
+            {recognizedText && (
+              <div className="text-center mb-6">
+                <div className="mb-4">
+                  <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-8 w-8 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-green-600 font-medium mb-2">
+                    Texte reconnu avec succès!
+                  </p>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4 border-2 border-green-200">
+                  <p className="text-lg font-semibold text-gray-800 break-words">
+                    "{recognizedText}"
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Error Message */}
+            {speechRecogError && (
+              <div className="text-center mb-6">
+                <div className="mb-4">
+                  <div className="w-16 h-16 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-8 w-8 text-white"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </div>
+                  <p className="text-sm text-red-600 font-medium mb-2">
+                    Erreur de reconnaissance
+                  </p>
+                </div>
+                <div className="bg-red-50 rounded-lg p-4 border-2 border-red-200">
+                  <p className="text-sm text-red-700 break-words">
+                    {speechRecogError}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Action Buttons */}
+            {!isListening && (recognizedText || speechRecogError) && (
+              <div className="flex justify-center gap-3 mt-6">
+                <button
+                  onClick={handleCloseSpeechRecognitionPopup}
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                >
+                  Fermer
+                </button>
+                {recognizedText && (
+                  <button
+                    onClick={() => {
+                      setUserInput(recognizedText);
+                      handleCloseSpeechRecognitionPopup();
+                    }}
+                    className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
+                  >
+                    Utiliser ce texte
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
