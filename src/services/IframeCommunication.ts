@@ -24,7 +24,7 @@ export interface CameraResponse {
 export interface VoiceRequest {
   type: "VOICE_REQUEST";
   action: "start_recording" | "stop_recording";
-  returnText?:boolean,
+  returnText?: boolean;
   options?: {
     maxDuration?: number; // in seconds
     audioFormat?: "mp3" | "wav" | "webm";
@@ -43,9 +43,9 @@ export interface VoiceResponse {
   error?: string;
 }
 
-export interface SpeechRecognitionResponse  {
+export interface SpeechRecognitionResponse {
   requestId?: string;
-  type: "SPEECH_RECOGNITION_RESPONSE" ;
+  type: "SPEECH_RECOGNITION_RESPONSE";
   success: boolean;
   text: string;
   error?: string;
@@ -174,7 +174,6 @@ class IframeCommunicationService {
         }
       }
 
-
       if (message.type === "SPEECH_RECOGNITION_RESPONSE") {
         console.log(
           "🎤 IframeCommunication: Received SPEECH_RECOGNITION_RESPONSE message:",
@@ -197,7 +196,6 @@ class IframeCommunicationService {
           }
         }
       }
-
 
       // Check for general handler
       if (message.type && this.messageHandlers.has(message.type)) {
@@ -446,7 +444,7 @@ class IframeCommunicationService {
       const voiceRequest: VoiceRequest & { requestId: string } = {
         type: "VOICE_REQUEST",
         action: "stop_recording",
-        returnText:true,
+        returnText: true,
         requestId,
       };
 
@@ -574,9 +572,6 @@ class IframeCommunicationService {
     this.sendMessageToParent(navigationRequest);
   }
 
-
-
-
   public requestSpeechRecognition(
     locale: string = "fr-FR",
     useDefaultUI: boolean = true
@@ -614,8 +609,6 @@ class IframeCommunicationService {
       }, 60000); // 60 second timeout
     });
   }
-
-
 }
 
 // Export singleton instance
