@@ -552,8 +552,7 @@ const Exercise1 = () => {
     try {
       setIsListening(true);
       setSpeechRecogError(null);
-      const locale =
-        (navigator.language || navigator.languages?.[0]) ?? "fr-FR";
+      const locale = "ar-SA";
       const response = await iframeCommunication.requestSpeechRecognition(locale);
       setSpeechRecogResp(response);
       if (!response.success) {
