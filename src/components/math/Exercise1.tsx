@@ -1,8 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import {
-  iframeCommunication,
-  type SpeechRecognitionResponse,
-} from "../../services/IframeCommunication";
+import { iframeCommunication } from "../../services/IframeCommunication";
 
 const Exercise1 = () => {
   const [mathProblem, setMathProblem] = useState({
@@ -544,68 +541,90 @@ const Exercise1 = () => {
     setShowResultVideo(true);
   };
 
-  const [speechRecogResp, setSpeechRecogResp] =
-    useState<SpeechRecognitionResponse | null>(null);
   const [speechRecogError, setSpeechRecogError] = useState<string | null>(null);
   const [showSpeechRecognitionPopup, setShowSpeechRecognitionPopup] =
     useState(false);
   const [recognizedText, setRecognizedText] = useState<string>("");
 
-  const handleSpeechRecognition = async () => {
+  const handleStartSpeechRecognition = async () => {
     try {
       setIsListening(true);
       setSpeechRecogError(null);
       setRecognizedText("");
       setShowSpeechRecognitionPopup(true);
-      const locale = "ar-SA";
-      const response = await iframeCommunication.requestSpeechRecognition(
+
+      const locale = "ar-Ma";
+      const response = await iframeCommunication.startSpeechRecognition(
         locale,
         false // useDefaultUI: false - partner app will create its own UI
       );
-      setSpeechRecogResp(response);
+
+      if (response.success) {
+        console.log("Speech recognition started successfully");
+      } else {
+        setSpeechRecogError(
+          response.error || "Échec du démarrage de la reconnaissance vocale"
+        );
+        setIsListening(false);
+        setTimeout(() => {
+          setShowSpeechRecognitionPopup(false);
+        }, 3000);
+      }
+    } catch (error) {
+      setSpeechRecogError(
+        error instanceof Error ? error.message : "Erreur inconnue"
+      );
+      setIsListening(false);
+      setTimeout(() => {
+        setShowSpeechRecognitionPopup(false);
+      }, 3000);
+    }
+  };
+
+  const handleStopSpeechRecognition = async () => {
+    try {
+      const response = await iframeCommunication.stopSpeechRecognition();
+
+      setIsListening(false);
+
       if (response.success && response.text) {
         setRecognizedText(response.text);
         // Auto-close after showing the result for 2 seconds
         setTimeout(() => {
           setShowSpeechRecognitionPopup(false);
-          setIsListening(false);
-          // Optionally, you can use the recognized text here
-          // For example, set it as user input:
+          // Use the recognized text as user input
           if (response.text) {
             setUserInput(response.text);
           }
         }, 2000);
       } else {
         setSpeechRecogError(
-          response.error || "Échec de la reconnaissance vocale"
+          response.error || "Échec de l'arrêt de la reconnaissance vocale"
         );
-        // Auto-close error after 3 seconds
         setTimeout(() => {
           setShowSpeechRecognitionPopup(false);
-          setIsListening(false);
         }, 3000);
       }
     } catch (error) {
-      setSpeechRecogResp(null);
+      setIsListening(false);
       setSpeechRecogError(
         error instanceof Error ? error.message : "Erreur inconnue"
       );
-      // Auto-close error after 3 seconds
       setTimeout(() => {
         setShowSpeechRecognitionPopup(false);
-        setIsListening(false);
       }, 3000);
-    } finally {
-      // Don't set isListening to false here if we're showing the popup
-      // It will be set to false in the setTimeout above
     }
   };
 
   const handleCloseSpeechRecognitionPopup = () => {
-    setShowSpeechRecognitionPopup(false);
-    setIsListening(false);
-    setSpeechRecogError(null);
-    setRecognizedText("");
+    // If still listening, stop first
+    if (isListening) {
+      handleStopSpeechRecognition();
+    } else {
+      setShowSpeechRecognitionPopup(false);
+      setSpeechRecogError(null);
+      setRecognizedText("");
+    }
   };
 
   if (!isTokenValidated) {
@@ -661,14 +680,12 @@ const Exercise1 = () => {
           className="w-auto h-auto"
         />
         {/* Show recognized text in top center when popup is closed */}
-        {speechRecogResp && !showSpeechRecognitionPopup && (
+        {recognizedText && !showSpeechRecognitionPopup && (
           <span
             className="font-medium drop-shadow-lg"
             style={{ color: "#057AA9", fontSize: "0.8rem" }}
           >
-            {speechRecogResp.success
-              ? `Texte reconnu: ${speechRecogResp.text}`
-              : `Erreur: ${speechRecogResp.error || "Aucune"}`}
+            Texte reconnu: {recognizedText}
           </span>
         )}
         {speechRecogError && !showSpeechRecognitionPopup && (
@@ -725,7 +742,16 @@ const Exercise1 = () => {
         </div>
         <div
           className="w-14 h-14 rounded-full border-2 border-white shadow-lg cursor-pointer hover:scale-105 transition-transform flex items-center justify-center bg-white/20 backdrop-blur-sm"
-          onClick={handleSpeechRecognition}
+          onClick={() => {
+            if (isListening) {
+              handleStopSpeechRecognition();
+            } else {
+              // Open popup first, user can start from there
+              setShowSpeechRecognitionPopup(true);
+              setSpeechRecogError(null);
+              setRecognizedText("");
+            }
+          }}
         >
           <span
             className="text-2xl"
@@ -735,7 +761,7 @@ const Exercise1 = () => {
               position: "relative",
             }}
           >
-            {isListening ? "⏳" : "🎤"}
+            {isListening ? "⏹️" : "🎤"}
           </span>
         </div>
       </div>
@@ -1300,6 +1326,44 @@ const Exercise1 = () => {
             )}
 
             {/* Action Buttons */}
+            {isListening && !recognizedText && !speechRecogError && (
+              <div className="flex justify-center gap-3 mt-6">
+                <button
+                  onClick={handleStopSpeechRecognition}
+                  className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium flex items-center gap-2"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <rect x="6" y="6" width="12" height="12" />
+                  </svg>
+                  Arrêter
+                </button>
+              </div>
+            )}
+
+            {!isListening && !recognizedText && !speechRecogError && (
+              <div className="flex justify-center gap-3 mt-6">
+                <button
+                  onClick={handleStartSpeechRecognition}
+                  className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center gap-2"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2s-2 .9-2 2v6c0 1.1.9 2 2 2zm5-2v-1c0-2.8-2.2-5-5-5S7 8.2 7 11v1c0 .6-.4 1-1 1s-1-.4-1-1v-1c0-3.9 3.1-7 7-7s7 3.1 7 7v1c0 .6-.4 1-1 1s-1-.4-1-1zm-5 4c-2.2 0-4-1.8-4-4v-2h2v2c0 1.1.9 2 2 2s2-.9 2-2v-2h2v2c0 2.2-1.8 4-4 4z" />
+                  </svg>
+                  Démarrer
+                </button>
+              </div>
+            )}
+
             {!isListening && (recognizedText || speechRecogError) && (
               <div className="flex justify-center gap-3 mt-6">
                 <button
@@ -1324,10 +1388,9 @@ const Exercise1 = () => {
                     onClick={async () => {
                       // Reset error state and retry
                       setSpeechRecogError(null);
-                      setSpeechRecogResp(null);
                       setRecognizedText("");
                       // Retry speech recognition
-                      await handleSpeechRecognition();
+                      await handleStartSpeechRecognition();
                     }}
                     className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium flex items-center gap-2"
                   >
