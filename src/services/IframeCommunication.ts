@@ -212,40 +212,6 @@ class IframeCommunicationService {
         }
       }
 
-      if (message.type === "START_SPEECH_RECOGNITION_RESPONSE") {
-        console.log(
-          "🎤 IframeCommunication: Received START_SPEECH_RECOGNITION_RESPONSE message:",
-          message
-        );
-        if (message.requestId) {
-          const specificHandlerKey = `START_SPEECH_RECOGNITION_RESPONSE_${message.requestId}`;
-          if (this.messageHandlers.has(specificHandlerKey)) {
-            const handler = this.messageHandlers.get(specificHandlerKey);
-            if (handler) {
-              handler(message);
-              return;
-            }
-          }
-        }
-      }
-
-      if (message.type === "STOP_SPEECH_RECOGNITION_RESPONSE") {
-        console.log(
-          "🎤 IframeCommunication: Received STOP_SPEECH_RECOGNITION_RESPONSE message:",
-          message
-        );
-        if (message.requestId) {
-          const specificHandlerKey = `STOP_SPEECH_RECOGNITION_RESPONSE_${message.requestId}`;
-          if (this.messageHandlers.has(specificHandlerKey)) {
-            const handler = this.messageHandlers.get(specificHandlerKey);
-            if (handler) {
-              handler(message);
-              return;
-            }
-          }
-        }
-      }
-
       // Check for general handler
       if (message.type && this.messageHandlers.has(message.type)) {
         console.log(
@@ -621,6 +587,10 @@ class IframeCommunicationService {
     this.sendMessageToParent(navigationRequest);
   }
 
+  /**
+   * Request speech recognition - handles the full flow (start, recognize, return result)
+   * This is a single call that starts recognition and waits for the result
+   */
   public requestSpeechRecognition(
     locale: string = "fr-FR",
     useDefaultUI: boolean = true
@@ -640,14 +610,18 @@ class IframeCommunicationService {
       };
 
       this.messageHandlers.set(handlerKey, responseHandler);
-      console.log("useDefaultUI", useDefaultUI);
+
       const speechRecognitionRequest = {
         type: "SPEECH_RECOGNITION",
         requestId,
         local: locale,
-        useDefaultUI: true,
+        useDefaultUI: useDefaultUI,
       };
 
+      console.log(
+        "IframeCommunication: Sending speech recognition request:",
+        speechRecognitionRequest
+      );
       this.sendMessageToParent(speechRecognitionRequest);
 
       setTimeout(() => {
@@ -656,77 +630,6 @@ class IframeCommunicationService {
           reject(new Error("Speech recognition timeout"));
         }
       }, 60000); // 60 second timeout
-    });
-  }
-
-  public startSpeechRecognition(
-    locale: string = "ar-Ma",
-    useDefaultUI: boolean = false
-  ): Promise<StartSpeechRecognitionResponse> {
-    return new Promise((resolve, reject) => {
-      const requestId = `speech_start_${Date.now()}_${Math.random()}`;
-      const handlerKey = `START_SPEECH_RECOGNITION_RESPONSE_${requestId}`;
-
-      const responseHandler = (message: CommunicationMessage) => {
-        if (
-          message.type === "START_SPEECH_RECOGNITION_RESPONSE" &&
-          message.requestId === requestId
-        ) {
-          this.messageHandlers.delete(handlerKey);
-          resolve(message as StartSpeechRecognitionResponse);
-        }
-      };
-
-      this.messageHandlers.set(handlerKey, responseHandler);
-
-      const startSpeechRecognitionRequest = {
-        type: "START_SPEECH_RECOGNITION",
-        requestId,
-        local: locale,
-        useDefaultUI,
-      };
-
-      this.sendMessageToParent(startSpeechRecognitionRequest);
-
-      setTimeout(() => {
-        if (this.messageHandlers.has(handlerKey)) {
-          this.messageHandlers.delete(handlerKey);
-          reject(new Error("Start speech recognition timeout"));
-        }
-      }, 10000); // 10 second timeout
-    });
-  }
-
-  public stopSpeechRecognition(): Promise<StopSpeechRecognitionResponse> {
-    return new Promise((resolve, reject) => {
-      const requestId = `speech_stop_${Date.now()}_${Math.random()}`;
-      const handlerKey = `STOP_SPEECH_RECOGNITION_RESPONSE_${requestId}`;
-
-      const responseHandler = (message: CommunicationMessage) => {
-        if (
-          message.type === "STOP_SPEECH_RECOGNITION_RESPONSE" &&
-          message.requestId === requestId
-        ) {
-          this.messageHandlers.delete(handlerKey);
-          resolve(message as StopSpeechRecognitionResponse);
-        }
-      };
-
-      this.messageHandlers.set(handlerKey, responseHandler);
-
-      const stopSpeechRecognitionRequest = {
-        type: "STOP_SPEECH_RECOGNITION",
-        requestId,
-      };
-
-      this.sendMessageToParent(stopSpeechRecognitionRequest);
-
-      setTimeout(() => {
-        if (this.messageHandlers.has(handlerKey)) {
-          this.messageHandlers.delete(handlerKey);
-          reject(new Error("Stop speech recognition timeout"));
-        }
-      }, 30000); // 30 second timeout
     });
   }
 }
