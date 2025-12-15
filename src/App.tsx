@@ -1,10 +1,12 @@
 import "./App.css";
 import Exercise1 from "./components/math/Exercise1";
+import { VoiceRecorderExample } from "./components/VoiceRecorderExample";
 
 function App() {
   return (
     <>
-      <Exercise1 />
+      {/* <Exercise1 /> */}
+      <VoiceRecorderExample />
       {/* <div
         style={{
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
