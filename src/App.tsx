@@ -1,5 +1,4 @@
 import "./App.css";
-import Exercise1 from "./components/math/Exercise1";
 import { VoiceRecorderExample } from "./components/VoiceRecorderExample";
 
 function App() {
