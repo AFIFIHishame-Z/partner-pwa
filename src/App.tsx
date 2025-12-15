@@ -10,7 +10,7 @@ function App() {
       {/* <div
         style={{
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          padding: "30px 0",
+          padding: "30px 0"
           textAlign: "center",
           boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
           position: "relative",
