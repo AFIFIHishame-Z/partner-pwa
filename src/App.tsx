@@ -1,11 +1,12 @@
 import "./App.css";
-import { TokenProviderExample } from "./components/TokenProviderExample";
+import { MyComponent } from "./components/useToken";
 
 function App() {
   return (
     <>
+      <MyComponent />
       {/* <Exercise1 /> */}
-      <TokenProviderExample />
+      {/* <TokenProviderExample /> */}
       {/* <VoiceRecorderExample /> */}
       {/* <div
         style={{
