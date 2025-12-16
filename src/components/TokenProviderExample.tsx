@@ -1,8 +1,5 @@
-import { useEffect, useState } from "react";
-import {
-  TokenProvider,
-  TokenProviderState,
-} from "@superapp_men/token-provider";
+import { useState } from "react";
+import { TokenProvider } from "@superapp_men/token-provider";
 
 export function TokenProviderExample() {
   const [tokenProvider] = useState(
