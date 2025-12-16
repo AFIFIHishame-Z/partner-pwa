@@ -1,11 +1,13 @@
 import "./App.css";
 import { VoiceRecorderExample } from "./components/VoiceRecorderExample";
+import { TokenProviderExample } from "./components/TokenProviderExample";
 
 function App() {
   return (
     <>
       {/* <Exercise1 /> */}
-      <VoiceRecorderExample />
+      <TokenProviderExample />
+      {/* <VoiceRecorderExample /> */}
       {/* <div
         style={{
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
