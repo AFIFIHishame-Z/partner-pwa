@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TokenProvider } from "@superapp_men/token-provider";
+import { TokenProvider, decodeJWT } from "@superapp_men/token-provider";
 
 export function TokenProviderExample() {
   const [tokenProvider] = useState(
@@ -14,6 +14,7 @@ export function TokenProviderExample() {
   //     TokenProviderState.IDLE
   //   );
   const [token, setToken] = useState<string | null>(null);
+  const [decodedToken, setDecodedToken] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState<any>(null);
 
@@ -48,10 +49,17 @@ export function TokenProviderExample() {
       setError(null);
       const tokenResponse = await tokenProvider.getToken();
       setToken(tokenResponse.token);
+
+      // Decode the JWT token
+      const decoded = decodeJWT(tokenResponse.token);
+      setDecodedToken(decoded);
+
       console.log("Token received:", tokenResponse);
+      console.log("Decoded token:", decoded);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to get token");
       console.error("Error getting token:", e);
+      setDecodedToken(null);
     }
   };
 
@@ -125,20 +133,38 @@ export function TokenProviderExample() {
         )}
 
         {token && (
-          <div
-            style={{
-              padding: "10px",
-              background: "#e8f5e9",
-              borderRadius: "4px",
-              marginBottom: "10px",
-              wordBreak: "break-all",
-            }}
-          >
-            <strong>Token:</strong>{" "}
-            <code style={{ fontSize: "12px" }}>
-              {token.substring(0, 50)}...
-            </code>
-          </div>
+          <>
+            <div
+              style={{
+                padding: "10px",
+                background: "#e8f5e9",
+                borderRadius: "4px",
+                marginBottom: "10px",
+                wordBreak: "break-all",
+              }}
+            >
+              <strong>Token:</strong>{" "}
+              <code style={{ fontSize: "12px" }}>
+                {token.substring(0, 50)}...
+              </code>
+            </div>
+
+            {decodedToken && (
+              <div
+                style={{
+                  padding: "10px",
+                  background: "#fff3e0",
+                  borderRadius: "4px",
+                  marginBottom: "10px",
+                }}
+              >
+                <strong>Decoded JWT Payload:</strong>
+                <pre style={{ fontSize: "12px", marginTop: "5px" }}>
+                  {JSON.stringify(decodedToken, null, 2)}
+                </pre>
+              </div>
+            )}
+          </>
         )}
 
         {userInfo && (
