@@ -1,5 +1,4 @@
 import "./App.css";
-import { VoiceRecorderExample } from "./components/VoiceRecorderExample";
 import { TokenProviderExample } from "./components/TokenProviderExample";
 
 function App() {
