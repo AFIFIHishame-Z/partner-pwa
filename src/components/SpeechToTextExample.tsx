@@ -22,7 +22,9 @@ export function SpeechToTextExample() {
   const [available, setAvailable] = useState<boolean | null>(null);
   const [permission, setPermission] = useState<string>("unknown");
   const [supportedLanguages, setSupportedLanguages] = useState<string[]>([]);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>(Language.EN_US);
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(
+    Language.EN_US
+  );
 
   useEffect(() => {
     // Listen to state changes
@@ -98,7 +100,9 @@ export function SpeechToTextExample() {
       const status = await speech.requestPermission();
       setPermission(status);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to request permission");
+      setError(
+        err instanceof Error ? err.message : "Failed to request permission"
+      );
     }
   };
 
@@ -119,11 +123,14 @@ export function SpeechToTextExample() {
 
       await speech.startListening({
         language: selectedLanguage,
-        partialResults: true,
+        partialResults: true, // Enable partial results for real-time display
         maxAlternatives: 3,
+        popup: false, // Partner app manages its own UI
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to start listening");
+      setError(
+        err instanceof Error ? err.message : "Failed to start listening"
+      );
     }
   };
 
@@ -220,7 +227,8 @@ export function SpeechToTextExample() {
 
         {supportedLanguages.length > 0 && (
           <div style={{ marginBottom: "10px" }}>
-            <strong>Supported Languages:</strong> {supportedLanguages.join(", ")}
+            <strong>Supported Languages:</strong>{" "}
+            {supportedLanguages.join(", ")}
           </div>
         )}
 
@@ -299,7 +307,12 @@ export function SpeechToTextExample() {
             </div>
           )}
           {transcript && (
-            <div style={{ color: "#333", marginTop: partialTranscript ? "10px" : "0" }}>
+            <div
+              style={{
+                color: "#333",
+                marginTop: partialTranscript ? "10px" : "0",
+              }}
+            >
               {transcript}
             </div>
           )}
@@ -368,4 +381,3 @@ export function SpeechToTextExample() {
     </div>
   );
 }
-
