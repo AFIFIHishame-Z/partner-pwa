@@ -13,38 +13,38 @@ export function TokenProviderExample() {
       })
   );
 
-  const [state, setState] = useState<TokenProviderState>(
-    TokenProviderState.IDLE
-  );
+  //   const [state, setState] = useState<TokenProviderState>(
+  //     TokenProviderState.IDLE
+  //   );
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [userInfo, setUserInfo] = useState<any>(null);
 
-  useEffect(() => {
-    // Listen to state changes
-    const unsubState = tokenProvider.on("stateChange", ({ state }: any) => {
-      setState(state);
-    });
+  //   useEffect(() => {
+  //     // Listen to state changes
+  //     const unsubState = tokenProvider.on("stateChange", ({ state }: any) => {
+  //       setState(state);
+  //     });
 
-    // Listen to token received events
-    const unsubToken = tokenProvider.on("tokenReceived", ({ token }: any) => {
-      setToken(token.token);
-      setError(null);
-    });
+  //     // Listen to token received events
+  //     const unsubToken = tokenProvider.on("tokenReceived", ({ token }: any) => {
+  //       setToken(token.token);
+  //       setError(null);
+  //     });
 
-    // Listen to errors
-    const unsubError = tokenProvider.on("error", ({ message }: any) => {
-      setError(message);
-      setToken(null);
-    });
+  //     // Listen to errors
+  //     const unsubError = tokenProvider.on("error", ({ message }: any) => {
+  //       setError(message);
+  //       setToken(null);
+  //     });
 
-    return () => {
-      unsubState();
-      unsubToken();
-      unsubError();
-      tokenProvider.destroy();
-    };
-  }, [tokenProvider]);
+  //     return () => {
+  //       unsubState();
+  //       unsubToken();
+  //       unsubError();
+  //       tokenProvider.destroy();
+  //     };
+  //   }, [tokenProvider]);
 
   const handleGetToken = async () => {
     try {
@@ -91,7 +91,7 @@ export function TokenProviderExample() {
           marginBottom: "20px",
         }}
       >
-        <div style={{ marginBottom: "10px" }}>
+        {/* <div style={{ marginBottom: "10px" }}>
           <strong>State:</strong>{" "}
           <span
             style={{
@@ -111,7 +111,7 @@ export function TokenProviderExample() {
           >
             {state}
           </span>
-        </div>
+        </div> */}
 
         {error && (
           <div
@@ -164,42 +164,43 @@ export function TokenProviderExample() {
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
         <button
           onClick={handleGetToken}
-          disabled={state === TokenProviderState.REQUESTING}
-          style={{
-            padding: "10px 20px",
-            background:
-              state === TokenProviderState.REQUESTING ? "#ccc" : "#2196f3",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor:
-              state === TokenProviderState.REQUESTING
-                ? "not-allowed"
-                : "pointer",
-            fontSize: "14px",
-          }}
+          //   disabled={state === TokenProviderState.REQUESTING}
+          //   style={{
+          //     padding: "10px 20px",
+          //     background:
+          //       state === TokenProviderState.REQUESTING ? "#ccc" : "#2196f3",
+          //     color: "white",
+          //     border: "none",
+          //     borderRadius: "4px",
+          //     cursor:
+          //       state === TokenProviderState.REQUESTING
+          //         ? "not-allowed"
+          //         : "pointer",
+          //     fontSize: "14px",
+          //   }}
         >
-          {state === TokenProviderState.REQUESTING
+          {/* {state === TokenProviderState.REQUESTING
             ? "Requesting..."
-            : "Get Token"}
+            : "Get Token"} */}
+          GET
         </button>
 
         <button
           onClick={handleGetUserInfo}
-          disabled={state === TokenProviderState.REQUESTING}
-          style={{
-            padding: "10px 20px",
-            background:
-              state === TokenProviderState.REQUESTING ? "#ccc" : "#4caf50",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor:
-              state === TokenProviderState.REQUESTING
-                ? "not-allowed"
-                : "pointer",
-            fontSize: "14px",
-          }}
+          //   disabled={state === TokenProviderState.REQUESTING}
+          //   style={{
+          //     padding: "10px 20px",
+          //     background:
+          //       state === TokenProviderState.REQUESTING ? "#ccc" : "#4caf50",
+          //     color: "white",
+          //     border: "none",
+          //     borderRadius: "4px",
+          //     cursor:
+          //       state === TokenProviderState.REQUESTING
+          //         ? "not-allowed"
+          //         : "pointer",
+          //     fontSize: "14px",
+          //   }}
         >
           Get User Info
         </button>
