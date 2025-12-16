@@ -123,7 +123,7 @@ export function SpeechToTextExample() {
 
       await speech.startListening({
         language: selectedLanguage,
-        partialResults: true, // Enable partial results for real-time display
+        partialResults: false, // Enable partial results for real-time display
         maxAlternatives: 3,
         popup: false, // Partner app manages its own UI
       });
