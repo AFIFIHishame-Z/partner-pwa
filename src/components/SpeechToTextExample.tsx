@@ -18,7 +18,12 @@ export function SpeechToTextExample() {
   const [isListening, setIsListening] = useState(false);
 
   // Log every render
-  console.log("[superapp] [React] 🔄 Component rendering - state:", state, "isListening:", isListening);
+  console.log(
+    "[superapp] [React] 🔄 Component rendering - state:",
+    state,
+    "isListening:",
+    isListening
+  );
   const [transcript, setTranscript] = useState<string>("");
   const [partialTranscript, setPartialTranscript] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -37,8 +42,16 @@ export function SpeechToTextExample() {
       setState(state);
       console.log("[superapp] [React] setState called");
       setIsListening(state === RecognitionState.LISTENING);
-      console.log("[superapp] [React] setIsListening called with:", state === RecognitionState.LISTENING);
-      console.log("[superapp] [React] State updated to:", state, "isListening:", state === RecognitionState.LISTENING);
+      console.log(
+        "[superapp] [React] setIsListening called with:",
+        state === RecognitionState.LISTENING
+      );
+      console.log(
+        "[superapp] [React] State updated to:",
+        state,
+        "isListening:",
+        state === RecognitionState.LISTENING
+      );
     });
 
     // Listen to partial results
@@ -67,7 +80,10 @@ export function SpeechToTextExample() {
 
     // Listen to listening stopped
     const unsubStopped = speech.on("listeningStopped", ({ duration }: any) => {
-      console.log("[superapp] [React] listeningStopped event, duration:", duration);
+      console.log(
+        "[superapp] [React] listeningStopped event, duration:",
+        duration
+      );
     });
 
     return () => {
@@ -133,7 +149,7 @@ export function SpeechToTextExample() {
 
       await speech.startListening({
         language: selectedLanguage,
-        partialResults: true,
+        partialResults: false,
         popup: false, // Partner app manages its own UI
       });
     } catch (err) {
@@ -142,7 +158,6 @@ export function SpeechToTextExample() {
       );
     }
   };
-
 
   const getStateColor = () => {
     switch (state) {
