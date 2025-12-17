@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@superapp_men/speech-to-text": "^1.0.6",
+    "@superapp_men/speech-to-text": "^1.0.7",
     "@superapp_men/token-provider": "^1.0.4",
     "@superapp_men/voice-recorder": "^1.0.1",
     "react": "^19.1.1",
