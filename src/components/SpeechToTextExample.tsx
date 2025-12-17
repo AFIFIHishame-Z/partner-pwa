@@ -16,6 +16,9 @@ export function SpeechToTextExample() {
 
   const [state, setState] = useState<RecognitionState>(RecognitionState.IDLE);
   const [isListening, setIsListening] = useState(false);
+
+  // Log every render
+  console.log("[superapp] [React] 🔄 Component rendering - state:", state, "isListening:", isListening);
   const [transcript, setTranscript] = useState<string>("");
   const [partialTranscript, setPartialTranscript] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
@@ -30,8 +33,11 @@ export function SpeechToTextExample() {
     // Listen to state changes
     const unsubState = speech.on("stateChange", ({ state }: any) => {
       console.log("[superapp] [React] stateChange event received:", state);
+      console.log("[superapp] [React] About to call setState with:", state);
       setState(state);
+      console.log("[superapp] [React] setState called");
       setIsListening(state === RecognitionState.LISTENING);
+      console.log("[superapp] [React] setIsListening called with:", state === RecognitionState.LISTENING);
       console.log("[superapp] [React] State updated to:", state, "isListening:", state === RecognitionState.LISTENING);
     });
 
@@ -137,18 +143,6 @@ export function SpeechToTextExample() {
     }
   };
 
-  const handleStopListening = async () => {
-    try {
-      setError(null);
-      const result = await speech.stopListening();
-      if (result) {
-        setTranscript(result.transcript);
-        console.log("Stopped with result:", result);
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to stop listening");
-    }
-  };
 
   const getStateColor = () => {
     switch (state) {
@@ -344,42 +338,27 @@ export function SpeechToTextExample() {
           </button>
         )}
 
-        {!isListening ? (
-          <button
-            onClick={handleStartListening}
-            disabled={!available || permission !== "granted"}
-            style={{
-              padding: "10px 20px",
-              background:
-                !available || permission !== "granted" ? "#ccc" : "#4caf50",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor:
-                !available || permission !== "granted"
-                  ? "not-allowed"
-                  : "pointer",
-              fontSize: "14px",
-            }}
-          >
-            🎤 Start Listening
-          </button>
-        ) : (
-          <button
-            onClick={handleStopListening}
-            style={{
-              padding: "10px 20px",
-              background: "#f44336",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "14px",
-            }}
-          >
-            ⏹️ Stop Listening
-          </button>
-        )}
+        <button
+          onClick={handleStartListening}
+          disabled={!available || permission !== "granted" || isListening}
+          style={{
+            padding: "10px 20px",
+            background:
+              !available || permission !== "granted" || isListening
+                ? "#ccc"
+                : "#4caf50",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor:
+              !available || permission !== "granted" || isListening
+                ? "not-allowed"
+                : "pointer",
+            fontSize: "14px",
+          }}
+        >
+          {isListening ? "🎤 Listening..." : "🎤 Start Listening"}
+        </button>
       </div>
     </div>
   );
