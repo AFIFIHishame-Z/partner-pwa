@@ -1,11 +1,12 @@
 import "./App.css";
-import { SpeechToTextExample } from "./components/SpeechToTextExample";
+import { TestSpeechToTextPackage } from "./components/TestSpeechToTextPackage";
 
 function App() {
   return (
     <>
+    <TestSpeechToTextPackage/>
       {/* <MyComponent /> */}
-      <SpeechToTextExample />
+      {/* <SpeechToTextExample /> */}
       {/* <Exercise1 /> */}
       {/* <TokenProviderExample /> */}
       {/* <VoiceRecorderExample /> */}
