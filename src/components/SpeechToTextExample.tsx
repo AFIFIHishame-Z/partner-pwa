@@ -29,35 +29,39 @@ export function SpeechToTextExample() {
   useEffect(() => {
     // Listen to state changes
     const unsubState = speech.on("stateChange", ({ state }: any) => {
+      console.log("[superapp] [React] stateChange event received:", state);
       setState(state);
       setIsListening(state === RecognitionState.LISTENING);
+      console.log("[superapp] [React] State updated to:", state, "isListening:", state === RecognitionState.LISTENING);
     });
 
     // Listen to partial results
     const unsubPartial = speech.on("partialResult", ({ result }: any) => {
+      console.log("[superapp] [React] partialResult event:", result.transcript);
       setPartialTranscript(result.transcript);
     });
 
     // Listen to final results
     const unsubResult = speech.on("result", ({ result }: any) => {
+      console.log("[superapp] [React] result event:", result.transcript);
       setTranscript(result.transcript);
       setPartialTranscript("");
-      console.log("Final result:", result);
     });
 
     // Listen to errors
     const unsubError = speech.on("error", ({ message }: any) => {
+      console.log("[superapp] [React] error event:", message);
       setError(message);
     });
 
     // Listen to listening started
     const unsubStarted = speech.on("listeningStarted", () => {
-      console.log("Listening started");
+      console.log("[superapp] [React] listeningStarted event");
     });
 
     // Listen to listening stopped
     const unsubStopped = speech.on("listeningStopped", ({ duration }: any) => {
-      console.log("Listening stopped, duration:", duration);
+      console.log("[superapp] [React] listeningStopped event, duration:", duration);
     });
 
     return () => {
