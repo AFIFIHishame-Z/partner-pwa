@@ -123,9 +123,8 @@ export function SpeechToTextExample() {
 
       await speech.startListening({
         language: selectedLanguage,
-        partialResults: false, // Enable partial results for real-time display
-        maxAlternatives: 3,
-        popup: false, // Partner app manages its own UI
+        partialResults: false,
+        popup: true, // Use native popup UI
       });
     } catch (err) {
       setError(
