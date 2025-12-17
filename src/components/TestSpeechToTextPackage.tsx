@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import {
   SpeechToText,
@@ -23,24 +22,24 @@ export function TestSpeechToTextPackage() {
 
   useEffect(() => {
     // State changes
-    const unsubState = speech.on("stateChange", ({ state } : any) => {
+    const unsubState = speech.on("stateChange", ({ state }: any) => {
       setState(state);
       setIsListening(state === RecognitionState.LISTENING);
     });
 
     // Real-time partial results (if partialResults: true)
-    const unsubPartial = speech.on("partialResult", ({ result } : any) => {
+    const unsubPartial = speech.on("partialResult", ({ result }: any) => {
       setPartialTranscript(result.transcript);
     });
 
     // Final result with confidence
-    const unsubResult = speech.on("result", ({ result } : any) => {
+    const unsubResult = speech.on("result", ({ result }: any) => {
       setTranscript(result.transcript);
       setPartialTranscript(""); // Clear partial when final arrives
     });
 
     // Error handling
-    const unsubError = speech.on("error", ({ message } : any) => {
+    const unsubError = speech.on("error", ({ message }: any) => {
       setError(message);
     });
 
@@ -49,7 +48,7 @@ export function TestSpeechToTextPackage() {
       console.log("🎤 Listening started");
     });
 
-    const unsubStopped = speech.on("listeningStopped", ({ duration } : any) => {
+    const unsubStopped = speech.on("listeningStopped", ({ duration }: any) => {
       console.log("⏹️ Listening stopped, duration:", duration);
     });
 
@@ -98,6 +97,7 @@ export function TestSpeechToTextPackage() {
         <p style={{ fontStyle: "italic" }}>{partialTranscript}...</p>
       )}
       {transcript && <p>{transcript}</p>}
+      <p>{JSON.stringify(state)}</p>
     </div>
   );
 }
