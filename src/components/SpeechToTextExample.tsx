@@ -149,7 +149,7 @@ export function SpeechToTextExample() {
 
       await speech.startListening({
         language: selectedLanguage,
-        partialResults: true,
+        partialResults: false,
         popup: false, // Partner app manages its own UI
       });
     } catch (err) {
