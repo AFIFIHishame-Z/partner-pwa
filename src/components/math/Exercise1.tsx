@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { iframeCommunication } from "../../services/IframeCommunication";
+import { TokenProvider, decodeJWT } from "@superapp_men/token-provider";
 
 const Exercise1 = () => {
   const [mathProblem, setMathProblem] = useState({
@@ -29,8 +30,8 @@ const Exercise1 = () => {
     grade?: string | number;
   } | null>(null);
   const [showStudentInfo, setShowStudentInfo] = useState(false);
-  const hasHandledTokenRef = useRef(false);
   const [isListening, setIsListening] = useState(false);
+  const tokenProviderRef = useRef<TokenProvider | null>(null);
 
   useEffect(() => {
     generateRandomProblem();
@@ -38,45 +39,68 @@ const Exercise1 = () => {
   }, []);
 
   useEffect(() => {
-    const handleSsoToken = (event: MessageEvent) => {
-      if (
-        hasHandledTokenRef.current ||
-        !event.data ||
-        event.data.type !== "sso_token"
-      ) {
-        return;
-      }
-
-      // Optional origin check – adjust to the exact expected origin if needed
-
-      // if (
-      //   event.origin &&
-      //   event.origin !== "https://superapp-front.azurewebsites.net"
-      // ) {
-      //   alert("Origin non autorisée");
-      //   return;
-      // }
-
-      const token = event.data.payload?.token;
-      if (!token) {
-        return;
-      }
-
-      hasHandledTokenRef.current = true;
-      setStudentInfo({
-        firstName: event.data.payload?.firstName,
-        grade: event.data.payload?.grade,
+    // Initialize TokenProvider
+    if (!tokenProviderRef.current) {
+      tokenProviderRef.current = new TokenProvider({
+        timeout: 10000,
+        debug: true,
       });
-      //alert(`Token reçu: ${token}`);
-      //alert("Le token est en cours de validation...");
+    }
 
-      setTimeout(() => {
-        setIsTokenValidated(true);
-      }, 3000);
+    const tokenProvider = tokenProviderRef.current;
+
+    // Get token and user info on component mount
+    const fetchTokenAndUserInfo = async () => {
+      try {
+        // Get token from SuperApp
+        const tokenResponse = await tokenProvider.getToken();
+        const token = tokenResponse.token;
+
+        if (!token) {
+          console.error("No token received");
+          return;
+        }
+
+        // Decode token to get user info
+        const decodedToken = decodeJWT(token);
+
+        // Also get user info from SuperApp
+        try {
+          const userInfo = await tokenProvider.getUserInfo();
+          setStudentInfo({
+            firstName: userInfo.firstName,
+            grade: userInfo.grade,
+          });
+        } catch (error) {
+          // Fallback to decoded token info
+          console.warn("Could not get user info, using token data:", error);
+          if (decodedToken) {
+            setStudentInfo({
+              firstName: decodedToken.firstName,
+              grade: decodedToken.grade,
+            });
+          }
+        }
+
+        // Validate token after a short delay
+        setTimeout(() => {
+          setIsTokenValidated(true);
+        }, 1000);
+      } catch (error) {
+        console.error("Error getting token:", error);
+        // You might want to show an error message to the user here
+      }
     };
 
-    window.addEventListener("message", handleSsoToken);
-    return () => window.removeEventListener("message", handleSsoToken);
+    fetchTokenAndUserInfo();
+
+    return () => {
+      // Cleanup on unmount
+      if (tokenProviderRef.current) {
+        tokenProviderRef.current.destroy();
+        tokenProviderRef.current = null;
+      }
+    };
   }, []);
 
   useEffect(() => {
