@@ -1,5 +1,5 @@
 import "./App.css";
-import { TokenProviderExample } from "./components/TokenProviderExample";
+import Exercise1 from "./components/math/Exercise1";
 
 function App() {
   return (
@@ -7,8 +7,8 @@ function App() {
       {/* <TestSpeechToTextPackage/> */}
       {/* <MyComponent /> */}
       {/* <SpeechToTextExample /> */}
-      {/* <Exercise1 /> */}
-      <TokenProviderExample />
+      <Exercise1 />
+      {/* <TokenProviderExample /> */}
       {/* <VoiceRecorderExample /> */}
       {/* <div
         style={{
