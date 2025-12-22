@@ -24,6 +24,7 @@ export function VoiceRecorderCapacitorSimple() {
   const [recording, setRecording] = useState<RecordingResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [available, setAvailable] = useState<boolean | null>(null);
+  const [showFullResponse, setShowFullResponse] = useState(false);
 
   useEffect(() => {
     // Check availability on mount
@@ -303,12 +304,162 @@ export function VoiceRecorderCapacitorSimple() {
               {recording.audioConfig?.sampleRate || 16000} Hz
             </strong>
           </div>
+          {JSON.stringify(recording)}
           {recording.audioData && (
-            <audio
-              controls
-              style={{ width: "100%", maxWidth: "500px" }}
-              src={`data:audio/wav;base64,${recording.audioData}`}
-            />
+            <div>
+              <div
+                style={{
+                  marginBottom: "12px",
+                  fontSize: "0.9rem",
+                  color: "#64748b",
+                }}
+              >
+                <strong style={{ color: "#1e293b" }}>Audio Response:</strong>
+              </div>
+              <audio
+                controls
+                style={{
+                  width: "100%",
+                  maxWidth: "500px",
+                  marginBottom: "12px",
+                }}
+                src={`data:audio/wav;base64,${recording.audioData}`}
+              />
+              <div
+                style={{
+                  marginTop: "12px",
+                  padding: "12px",
+                  borderRadius: "6px",
+                  backgroundColor: "rgba(0,0,0,0.05)",
+                  fontSize: "0.85rem",
+                  color: "#64748b",
+                  wordBreak: "break-all",
+                  maxHeight: "150px",
+                  overflowY: "auto",
+                }}
+              >
+                <div
+                  style={{
+                    marginBottom: "8px",
+                    fontWeight: "600",
+                    color: "#1e293b",
+                  }}
+                >
+                  Audio Data (Base64 - first 200 chars):
+                </div>
+                <code style={{ fontSize: "0.8rem" }}>
+                  {recording.audioData.substring(0, 200)}
+                  {recording.audioData.length > 200 ? "..." : ""}
+                </code>
+                <div style={{ marginTop: "8px", fontSize: "0.75rem" }}>
+                  Full length: {recording.audioData.length} characters
+                </div>
+              </div>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  marginTop: "12px",
+                  flexWrap: "wrap",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    // Create download link
+                    const link = document.createElement("a");
+                    const blob = new Blob(
+                      [
+                        Uint8Array.from(atob(recording.audioData), (c) =>
+                          c.charCodeAt(0)
+                        ),
+                      ],
+                      { type: "audio/wav" }
+                    );
+                    const url = URL.createObjectURL(blob);
+                    link.href = url;
+                    link.download = `recording-${Date.now()}.wav`;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                  }}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: "6px",
+                    border: "1px solid rgba(34,197,94,0.3)",
+                    backgroundColor: "rgba(34,197,94,0.1)",
+                    color: "#16a34a",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  📥 Download Audio
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowFullResponse(!showFullResponse)}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: "6px",
+                    border: "1px solid rgba(59,130,246,0.3)",
+                    backgroundColor: "rgba(59,130,246,0.1)",
+                    color: "#1e40af",
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontSize: "0.9rem",
+                  }}
+                >
+                  {showFullResponse ? "📋 Hide" : "📋 Show"} Full Response
+                </button>
+              </div>
+              {showFullResponse && (
+                <div
+                  style={{
+                    marginTop: "12px",
+                    padding: "12px",
+                    borderRadius: "6px",
+                    backgroundColor: "rgba(0,0,0,0.05)",
+                    fontSize: "0.85rem",
+                    maxHeight: "300px",
+                    overflowY: "auto",
+                  }}
+                >
+                  <div
+                    style={{
+                      marginBottom: "8px",
+                      fontWeight: "600",
+                      color: "#1e293b",
+                    }}
+                  >
+                    Full Recording Response:
+                  </div>
+                  <pre
+                    style={{
+                      margin: 0,
+                      fontSize: "0.8rem",
+                      color: "#64748b",
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-all",
+                    }}
+                  >
+                    {JSON.stringify(
+                      {
+                        ...recording,
+                        audioData: recording.audioData
+                          ? `${recording.audioData.substring(0, 100)}... (${
+                              recording.audioData.length
+                            } chars total)`
+                          : null,
+                      },
+                      null,
+                      2
+                    )}
+                  </pre>
+                </div>
+              )}
+            </div>
           )}
         </div>
       )}
