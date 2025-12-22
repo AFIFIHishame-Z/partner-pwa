@@ -1,7 +1,8 @@
 import "./App.css";
 // import Exercise1 from "./components/math/Exercise1";
 // import { VoiceRecorderCapacitorWithCheckpoints } from "./components/VoiceRecorderCapacitorWithCheckpoints";
-import { VoiceRecorderCapacitorSimple } from "./components/VoiceRecorderCapacitorSimple";
+// import { VoiceRecorderCapacitorSimple } from "./components/VoiceRecorderCapacitorSimple";
+import { VoiceRecorderCapacitorWithCheckpoints } from "./components/VoiceRecorderCapacitorWithCheckpoints";
 
 function App() {
   return (
@@ -14,8 +15,8 @@ function App() {
       {/* <VoiceRecorderExample /> */}
 
       {/* Capacitor Voice Recorder Examples */}
-      <VoiceRecorderCapacitorSimple />
-      {/* <VoiceRecorderCapacitorWithCheckpoints /> */}
+      {/* <VoiceRecorderCapacitorSimple /> */}
+      <VoiceRecorderCapacitorWithCheckpoints />
       {/* <div
         style={{
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
