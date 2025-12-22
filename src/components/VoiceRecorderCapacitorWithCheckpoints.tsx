@@ -309,7 +309,7 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
           <div
             style={{ display: "flex", flexDirection: "column", gap: "12px" }}
           >
-            {checkpoints.map((checkpoint, index) => (
+            {checkpoints.map((checkpoint) => (
               <div
                 key={checkpoint.id}
                 style={{

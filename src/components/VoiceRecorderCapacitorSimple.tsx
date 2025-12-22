@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import {
   VoiceRecorder,
   RecorderState,
-  PermissionStatus,
+  type PermissionStatus,
   formatDuration,
   AudioFormat,
   SampleRate,
@@ -133,8 +133,15 @@ export function VoiceRecorderCapacitorSimple() {
       </h2>
 
       {available !== null && (
-        <div style={{ fontSize: "0.9rem", marginBottom: "12px", color: available ? "#22c55e" : "#ef4444" }}>
-          Status: <strong>{available ? "✅ Available" : "❌ Not Available"}</strong>
+        <div
+          style={{
+            fontSize: "0.9rem",
+            marginBottom: "12px",
+            color: available ? "#22c55e" : "#ef4444",
+          }}
+        >
+          Status:{" "}
+          <strong>{available ? "✅ Available" : "❌ Not Available"}</strong>
         </div>
       )}
 
@@ -158,7 +165,14 @@ export function VoiceRecorderCapacitorSimple() {
         </div>
       )}
 
-      <div style={{ display: "flex", gap: "12px", marginBottom: "16px", flexWrap: "wrap" }}>
+      <div
+        style={{
+          display: "flex",
+          gap: "12px",
+          marginBottom: "16px",
+          flexWrap: "wrap",
+        }}
+      >
         <button
           type="button"
           onClick={handleCheckPermission}
@@ -226,29 +240,68 @@ export function VoiceRecorderCapacitorSimple() {
         </button>
       </div>
 
-      <div style={{ fontSize: "0.9rem", marginBottom: "8px", color: "#64748b" }}>
+      <div
+        style={{ fontSize: "0.9rem", marginBottom: "8px", color: "#64748b" }}
+      >
         State: <strong style={{ color: "#1e293b" }}>{state}</strong>
       </div>
 
       {isRecording && (
-        <div style={{ fontSize: "0.9rem", marginBottom: "8px", color: "#64748b" }}>
-          Duration: <strong style={{ color: "#1e293b" }}>{formatDuration(duration)}</strong>
+        <div
+          style={{ fontSize: "0.9rem", marginBottom: "8px", color: "#64748b" }}
+        >
+          Duration:{" "}
+          <strong style={{ color: "#1e293b" }}>
+            {formatDuration(duration)}
+          </strong>
         </div>
       )}
 
       {recording && (
-        <div style={{ marginTop: "16px", padding: "16px", borderRadius: "8px", backgroundColor: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.3)" }}>
-          <h3 style={{ fontSize: "1.1rem", marginBottom: "12px", color: "#1e293b" }}>
+        <div
+          style={{
+            marginTop: "16px",
+            padding: "16px",
+            borderRadius: "8px",
+            backgroundColor: "rgba(34,197,94,0.1)",
+            border: "1px solid rgba(34,197,94,0.3)",
+          }}
+        >
+          <h3
+            style={{
+              fontSize: "1.1rem",
+              marginBottom: "12px",
+              color: "#1e293b",
+            }}
+          >
             Recording Complete
           </h3>
-          <div style={{ fontSize: "0.9rem", marginBottom: "12px", color: "#64748b" }}>
-            Duration: <strong style={{ color: "#1e293b" }}>{formatDuration(recording.duration)}</strong>
+          <div
+            style={{
+              fontSize: "0.9rem",
+              marginBottom: "12px",
+              color: "#64748b",
+            }}
+          >
+            Duration:{" "}
+            <strong style={{ color: "#1e293b" }}>
+              {formatDuration(recording.duration)}
+            </strong>
             <br />
-            Size: <strong style={{ color: "#1e293b" }}>{(recording.size / 1024).toFixed(2)} KB</strong>
+            Size:{" "}
+            <strong style={{ color: "#1e293b" }}>
+              {(recording.size / 1024).toFixed(2)} KB
+            </strong>
             <br />
-            Format: <strong style={{ color: "#1e293b" }}>{recording.audioConfig?.format || "wav"}</strong>
+            Format:{" "}
+            <strong style={{ color: "#1e293b" }}>
+              {recording.audioConfig?.format || "wav"}
+            </strong>
             <br />
-            Sample Rate: <strong style={{ color: "#1e293b" }}>{recording.audioConfig?.sampleRate || 16000} Hz</strong>
+            Sample Rate:{" "}
+            <strong style={{ color: "#1e293b" }}>
+              {recording.audioConfig?.sampleRate || 16000} Hz
+            </strong>
           </div>
           {recording.audioData && (
             <audio
@@ -262,4 +315,3 @@ export function VoiceRecorderCapacitorSimple() {
     </div>
   );
 }
-
