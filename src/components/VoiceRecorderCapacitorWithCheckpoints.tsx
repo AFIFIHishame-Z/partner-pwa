@@ -124,6 +124,9 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
   const handleStop = async () => {
     try {
       const result = await recorder.stopRecording();
+
+      // The service now properly merges all checkpoint segments into result.audioData
+      // So we can use it directly without additional processing
       setRecording(result);
       setCheckpoints(result.checkpoints || []);
     } catch (e) {
@@ -376,11 +379,29 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
             </strong>
           </div>
           {recording.audioData && (
-            <audio
-              controls
-              style={{ width: "100%", maxWidth: "500px" }}
-              src={`data:audio/wav;base64,${recording.audioData}`}
-            />
+            <div>
+              <p
+                style={{
+                  fontSize: "0.85rem",
+                  color: "#64748b",
+                  marginBottom: "8px",
+                }}
+              >
+                {recording.checkpoints && recording.checkpoints.length > 0 ? (
+                  <>
+                    Complete Recording (all {recording.checkpointCount + 1}{" "}
+                    segments merged):
+                  </>
+                ) : (
+                  <>Complete Recording:</>
+                )}
+              </p>
+              <audio
+                controls
+                style={{ width: "100%", maxWidth: "500px" }}
+                src={`data:audio/wav;base64,${recording.audioData}`}
+              />
+            </div>
           )}
         </div>
       )}
