@@ -31,7 +31,7 @@ export function SpeechToTextExample() {
   const [permission, setPermission] = useState<string>("unknown");
   const [supportedLanguages, setSupportedLanguages] = useState<string[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState<string>(
-    Language.EN_US
+    Language.AR_MA
   );
 
   useEffect(() => {
