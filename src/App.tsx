@@ -1,5 +1,6 @@
 import "./App.css";
-import { SpeechToTextExample } from "./components/SpeechToTextExample";
+// import { SpeechToTextExample } from "./components/SpeechToTextExample";
+import { TokenProviderExample } from "./components/TokenProviderExample";
 // import Exercise1 from "./components/math/Exercise1";
 // import { VoiceRecorderCapacitorWithCheckpoints } from "./components/VoiceRecorderCapacitorWithCheckpoints";
 // import { VoiceRecorderCapacitorSimple } from "./components/VoiceRecorderCapacitorSimple";
@@ -10,9 +11,9 @@ function App() {
     <>
       {/* <TestSpeechToTextPackage/> */}
       {/* <MyComponent /> */}
-      <SpeechToTextExample />
+      {/* <SpeechToTextExample /> */}
       {/* <Exercise1 /> */}
-      {/* <TokenProviderExample /> */}
+      <TokenProviderExample />
       {/* <VoiceRecorderExample /> */}
 
       {/* Capacitor Voice Recorder Examples */}
