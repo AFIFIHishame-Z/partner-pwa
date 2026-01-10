@@ -101,7 +101,7 @@ export function TokenProviderExample() {
         }}
       >
         <div style={{ marginBottom: "10px" }}>
-          <strong>Stateee:</strong>{" "}
+          <strong>Stateeeee:</strong>{" "}
           <span
             style={{
               padding: "4px 8px",
