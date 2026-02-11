@@ -342,8 +342,42 @@ export function VoiceRecorderCapacitorSimple() {
                 src={decodedBlobUrl}
               />
               <div style={{ marginTop: "8px", fontSize: "0.8rem", color: "#64748b" }}>
-                Blob URL: <code>{decodedBlobUrl}</code>
+                Base64 Audio Data:
               </div>
+              <div
+                style={{
+                  marginTop: "8px",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  backgroundColor: "rgba(0,0,0,0.05)",
+                  maxHeight: "200px",
+                  overflowY: "auto",
+                  wordBreak: "break-all",
+                }}
+              >
+                <code style={{ fontSize: "0.75rem" }}>{recording?.audioData}</code>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (recording?.audioData) {
+                    navigator.clipboard.writeText(recording.audioData);
+                  }
+                }}
+                style={{
+                  marginTop: "8px",
+                  padding: "6px 12px",
+                  borderRadius: "6px",
+                  border: "1px solid rgba(59,130,246,0.3)",
+                  backgroundColor: "rgba(59,130,246,0.1)",
+                  color: "#1e40af",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  fontSize: "0.85rem",
+                }}
+              >
+                Copy Base64
+              </button>
             </div>
           )}
           {recording.audioData && (
