@@ -105,6 +105,8 @@ export function VoiceRecorderCapacitorSimple() {
   const handleStop = async () => {
     try {
       const result = await recorder.stopRecording();
+      console.log(JSON.stringify(result));
+      
       setRecording(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to stop recording");
@@ -130,7 +132,7 @@ export function VoiceRecorderCapacitorSimple() {
           color: "#1e293b",
         }}
       >
-        🎤 Voice Recorder (Capacitor) - Simple Mode
+        🎤 Voice Recorder (Capacitor) - Simple Mode : {JSON.stringify(recording)}
       </h2>
 
       {available !== null && (
