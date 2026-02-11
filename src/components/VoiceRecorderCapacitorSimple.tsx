@@ -115,7 +115,6 @@ export function VoiceRecorderCapacitorSimple() {
   const handleStop = async () => {
     try {
       const result = await recorder.stopRecording();
-      console.log(JSON.stringify(result));
 
       if (result.audioData) {
         const audioBlob = decodeBase64ToBlob(result.audioData);
@@ -149,7 +148,7 @@ export function VoiceRecorderCapacitorSimple() {
           color: "#1e293b",
         }}
       >
-        🎤 Voice Recorder (Capacitor) - Simple Mode : {JSON.stringify(recording)}
+        🎤 Voice Recorder (Capacitor) - Simple Mode
       </h2>
 
       {available !== null && (
@@ -298,30 +297,40 @@ export function VoiceRecorderCapacitorSimple() {
           </h3>
           <div
             style={{
-              fontSize: "0.9rem",
+              fontSize: "0.85rem",
               marginBottom: "12px",
-              color: "#64748b",
+              padding: "12px",
+              borderRadius: "6px",
+              backgroundColor: "rgba(0,0,0,0.04)",
             }}
           >
-            Duration:{" "}
-            <strong style={{ color: "#1e293b" }}>
-              {formatDuration(recording.duration)}
-            </strong>
-            <br />
-            Size:{" "}
-            <strong style={{ color: "#1e293b" }}>
-              {(recording.size / 1024).toFixed(2)} KB
-            </strong>
-            <br />
-            Format:{" "}
-            <strong style={{ color: "#1e293b" }}>
-              {recording.audioConfig?.format || "wav"}
-            </strong>
-            <br />
-            Sample Rate:{" "}
-            <strong style={{ color: "#1e293b" }}>
-              {recording.audioConfig?.sampleRate || 16000} Hz
-            </strong>
+            <pre
+              style={{
+                margin: 0,
+                fontSize: "0.8rem",
+                color: "#1e293b",
+                whiteSpace: "pre-wrap",
+                wordBreak: "break-all",
+              }}
+            >
+              {JSON.stringify(
+                {
+                  duration: recording.duration,
+                  durationFormatted: formatDuration(recording.duration),
+                  size: recording.size,
+                  sizeKB: (recording.size / 1024).toFixed(2) + " KB",
+                  audioConfig: recording.audioConfig,
+                  checkpointCount: recording.checkpointCount,
+                  timestamp: recording.timestamp,
+                  audioDataLength: recording.audioData?.length || 0,
+                  audioDataPreview: recording.audioData
+                    ? recording.audioData.substring(0, 100) + "..."
+                    : "(empty)",
+                },
+                null,
+                2
+              )}
+            </pre>
           </div>
           {decodedBlobUrl && (
             <div
