@@ -9,6 +9,15 @@ import {
   type RecordingResult,
 } from "@superapp_men/voice-recorder-capacitor";
 
+function decodeBase64ToBlob(base64: string, mimeType = "audio/wav"): Blob {
+  const byteString = atob(base64);
+  const byteArray = new Uint8Array(byteString.length);
+  for (let i = 0; i < byteString.length; i++) {
+    byteArray[i] = byteString.charCodeAt(i);
+  }
+  return new Blob([byteArray], { type: mimeType });
+}
+
 export function VoiceRecorderCapacitorSimple() {
   const [recorder] = useState(
     () =>
@@ -25,6 +34,7 @@ export function VoiceRecorderCapacitorSimple() {
   const [error, setError] = useState<string | null>(null);
   const [available, setAvailable] = useState<boolean | null>(null);
   const [showFullResponse, setShowFullResponse] = useState(false);
+  const [decodedBlobUrl, setDecodedBlobUrl] = useState<string | null>(null);
 
   useEffect(() => {
     // Check availability on mount
@@ -106,7 +116,14 @@ export function VoiceRecorderCapacitorSimple() {
     try {
       const result = await recorder.stopRecording();
       console.log(JSON.stringify(result));
-      
+
+      if (result.audioData) {
+        const audioBlob = decodeBase64ToBlob(result.audioData);
+        console.log("Decoded audio blob:", audioBlob.size, "bytes", audioBlob.type);
+        const url = URL.createObjectURL(audioBlob);
+        setDecodedBlobUrl(url);
+      }
+
       setRecording(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to stop recording");
@@ -306,7 +323,29 @@ export function VoiceRecorderCapacitorSimple() {
               {recording.audioConfig?.sampleRate || 16000} Hz
             </strong>
           </div>
-          {JSON.stringify(recording)}
+          {decodedBlobUrl && (
+            <div
+              style={{
+                marginTop: "12px",
+                padding: "12px",
+                borderRadius: "6px",
+                backgroundColor: "rgba(59,130,246,0.1)",
+                border: "1px solid rgba(59,130,246,0.3)",
+              }}
+            >
+              <div style={{ marginBottom: "8px", fontWeight: "600", color: "#1e293b" }}>
+                Decoded Blob Audio:
+              </div>
+              <audio
+                controls
+                style={{ width: "100%", maxWidth: "500px" }}
+                src={decodedBlobUrl}
+              />
+              <div style={{ marginTop: "8px", fontSize: "0.8rem", color: "#64748b" }}>
+                Blob URL: <code>{decodedBlobUrl}</code>
+              </div>
+            </div>
+          )}
           {recording.audioData && (
             <div>
               <div
