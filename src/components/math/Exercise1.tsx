@@ -68,8 +68,8 @@ const Exercise1 = () => {
         try {
           const userInfo = await tokenProvider.getUserInfo();
           setStudentInfo({
-            firstName: userInfo.firstName,
-            grade: userInfo.grade,
+            firstName: userInfo.firstNameFr,
+            grade: userInfo.gradeCode,
           });
         } catch (error) {
           // Fallback to decoded token info
