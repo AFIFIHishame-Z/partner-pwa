@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@superapp_men/speech-to-text": "^1.0.15",
-    "@superapp_men/token-provider": "^1.0.10",
+    "@superapp_men/token-provider": "^1.0.11",
     "@superapp_men/voice-recorder": "^1.0.1",
     "@superapp_men/voice-recorder-capacitor": "^1.0.1",
     "react": "^19.1.1",
