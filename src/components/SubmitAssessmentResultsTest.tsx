@@ -59,13 +59,20 @@ interface BuilderQuestion {
   isCorrect: boolean;
   questionOrder: number;
   questionRole: number;
-  responseTime?: number;
+  responseTime?: number | string;
+  attemptsCount?: number;
+  questionTextFr?: string;
+  questionTextAr?: string;
 }
 
 interface BuilderSkill {
   skillCode: string;
   skillOrder: number;
   passed: boolean;
+  titleFr?: string;
+  titleAr?: string;
+  descriptionFr?: string;
+  descriptionAr?: string;
   questions: BuilderQuestion[];
 }
 
@@ -199,21 +206,45 @@ export function SubmitAssessmentResultsTest() {
     setParseError(null);
     try {
       const skillsPayload: SubmittedSkillResultPayload[] = builderSkills.map(
-        (s) =>
-          AssessmentSubmission.skill(s.skillCode, s.skillOrder, s.passed)
+        (s) => {
+          const sb = AssessmentSubmission.skill(
+            s.skillCode,
+            s.skillOrder,
+            s.passed
+          );
+          if (s.titleFr !== undefined || s.titleAr !== undefined)
+            sb.title(s.titleFr, s.titleAr);
+          if (
+            s.descriptionFr !== undefined ||
+            s.descriptionAr !== undefined
+          )
+            sb.description(s.descriptionFr, s.descriptionAr);
+          return sb
             .questions(
               s.questions.map((q) => {
                 const qb = AssessmentSubmission.question(
                   q.questionCode,
                   q.isCorrect,
                   q.questionRole as QuestionRole
+                ).order(q.questionOrder);
+                if (q.responseTime != null) {
+                  const rt =
+                    typeof q.responseTime === "string"
+                      ? q.responseTime
+                      : q.responseTime;
+                  qb.responseTime(rt);
+                }
+                if (q.attemptsCount != null) qb.attemptsCount(q.attemptsCount);
+                if (
+                  q.questionTextFr !== undefined ||
+                  q.questionTextAr !== undefined
                 )
-                  .order(q.questionOrder);
-                if (q.responseTime != null) qb.responseTime(q.responseTime);
+                  qb.questionText(q.questionTextFr, q.questionTextAr);
                 return qb.build();
               })
             )
-            .build()
+            .build();
+        }
       );
 
       const payload = AssessmentSubmission.builder()
@@ -580,6 +611,59 @@ export function SubmitAssessmentResultsTest() {
                     Remove skill
                   </button>
                 </div>
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+                    gap: "8px",
+                    marginBottom: "8px",
+                  }}
+                >
+                  <input
+                    type="text"
+                    placeholder="titleFr"
+                    value={skill.titleFr ?? ""}
+                    onChange={(e) =>
+                      updateBuilderSkill(sIdx, {
+                        titleFr: e.target.value || undefined,
+                      })
+                    }
+                    style={inputStyle}
+                  />
+                  <input
+                    type="text"
+                    placeholder="titleAr"
+                    value={skill.titleAr ?? ""}
+                    onChange={(e) =>
+                      updateBuilderSkill(sIdx, {
+                        titleAr: e.target.value || undefined,
+                      })
+                    }
+                    style={inputStyle}
+                  />
+                  <input
+                    type="text"
+                    placeholder="descriptionFr"
+                    value={skill.descriptionFr ?? ""}
+                    onChange={(e) =>
+                      updateBuilderSkill(sIdx, {
+                        descriptionFr: e.target.value || undefined,
+                      })
+                    }
+                    style={inputStyle}
+                  />
+                  <input
+                    type="text"
+                    placeholder="descriptionAr"
+                    value={skill.descriptionAr ?? ""}
+                    onChange={(e) =>
+                      updateBuilderSkill(sIdx, {
+                        descriptionAr: e.target.value || undefined,
+                      })
+                    }
+                    style={inputStyle}
+                  />
+                </div>
                 <div style={{ marginLeft: "12px" }}>
                   {skill.questions.map((q, qIdx) => (
                     <div
@@ -647,6 +731,63 @@ export function SubmitAssessmentResultsTest() {
                         </option>
                         <option value={QuestionRole.BONUS}>BONUS (4)</option>
                       </select>
+                      <input
+                        type="text"
+                        placeholder="responseTime (ms or hh:mm:ss)"
+                        value={q.responseTime ?? ""}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          const num = parseInt(v, 10);
+                          updateBuilderQuestion(sIdx, qIdx, {
+                            responseTime:
+                              v === ""
+                                ? undefined
+                                : Number.isNaN(num)
+                                  ? v
+                                  : num,
+                          });
+                        }}
+                        style={{ ...inputStyle, width: "140px" }}
+                      />
+                      <input
+                        type="number"
+                        min={0}
+                        placeholder="attemptsCount"
+                        value={q.attemptsCount ?? ""}
+                        onChange={(e) =>
+                          updateBuilderQuestion(sIdx, qIdx, {
+                            attemptsCount:
+                              e.target.value === ""
+                                ? undefined
+                                : parseInt(e.target.value, 10) || 0,
+                          })
+                        }
+                        style={{ ...inputStyle, width: "90px" }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="questionTextFr"
+                        value={q.questionTextFr ?? ""}
+                        onChange={(e) =>
+                          updateBuilderQuestion(sIdx, qIdx, {
+                            questionTextFr:
+                              e.target.value || undefined,
+                          })
+                        }
+                        style={{ ...inputStyle, width: "100px" }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="questionTextAr"
+                        value={q.questionTextAr ?? ""}
+                        onChange={(e) =>
+                          updateBuilderQuestion(sIdx, qIdx, {
+                            questionTextAr:
+                              e.target.value || undefined,
+                          })
+                        }
+                        style={{ ...inputStyle, width: "100px" }}
+                      />
                       <button
                         type="button"
                         onClick={() => removeBuilderQuestion(sIdx, qIdx)}
