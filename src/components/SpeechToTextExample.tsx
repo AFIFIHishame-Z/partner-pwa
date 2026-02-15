@@ -165,6 +165,17 @@ export function SpeechToTextExample() {
     }
   };
 
+  const handleStopListening = async () => {
+    try {
+      setError(null);
+      await speech.stopListening();
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to stop listening",
+      );
+    }
+  };
+
   const getStateColor = () => {
     switch (state) {
       case RecognitionState.LISTENING:
@@ -408,7 +419,23 @@ export function SpeechToTextExample() {
             fontSize: "14px",
           }}
         >
-          {isListening ? "🎤 Listening..." : "🎤 Start Listening"}
+          🎤 Start recording
+        </button>
+
+        <button
+          onClick={handleStopListening}
+          disabled={!available || !isListening}
+          style={{
+            padding: "10px 20px",
+            background: !available || !isListening ? "#ccc" : "#f44336",
+            color: "white",
+            border: "none",
+            borderRadius: "4px",
+            cursor: !available || !isListening ? "not-allowed" : "pointer",
+            fontSize: "14px",
+          }}
+        >
+          ⏹ Stop recording
         </button>
       </div>
     </div>
