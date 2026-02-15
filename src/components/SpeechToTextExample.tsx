@@ -64,12 +64,13 @@ export function SpeechToTextExample() {
     });
 
     // Listen to final results
-    const unsubResult = speech.on("result", ({ result }: any) => {
+    const unsubResult = speech.on("result", (event: any) => {
+      const { result } = event;
       console.log("[superapp] [React] result event:", result.transcript);
       console.log("[superapp] [React] result :", result);
       setTranscript(result.transcript);
       setPartialTranscript("");
-      setLastResultJson({ type: "result", ...event });
+      setLastResultJson({ type: "result", ...result });
     });
 
     // Listen to errors
