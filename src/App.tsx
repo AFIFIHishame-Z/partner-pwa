@@ -1,5 +1,6 @@
 import "./App.css";
-import { SubmitAssessmentResultsTest } from "./components/SubmitAssessmentResultsTest";
+import { SpeechToTextExample } from "./components/SpeechToTextExample";
+// import { SubmitAssessmentResultsTest } from "./components/SubmitAssessmentResultsTest";
 //import { TokenProviderExample } from "./components/TokenProviderExample";
 // import { SpeechToTextExample } from "./components/SpeechToTextExample";
 // import { TokenProviderExample } from "./components/TokenProviderExample";
@@ -14,9 +15,9 @@ function App() {
     <>
       {/* <TestSpeechToTextPackage/> */}
       {/* <MyComponent /> */}
-      {/* <SpeechToTextExample /> */}
+      <SpeechToTextExample />
       {/* <Exercise1 /> */}
-      <SubmitAssessmentResultsTest />
+      {/* <SubmitAssessmentResultsTest /> */}
       {/* <TokenProviderExample /> */}
       {/* <VoiceRecorderExample /> */}
 

@@ -11,7 +11,7 @@ export function SpeechToTextExample() {
       new SpeechToText({
         timeout: 10000,
         debug: true,
-      })
+      }),
   );
 
   const [state, setState] = useState<RecognitionState>(RecognitionState.IDLE);
@@ -22,16 +22,17 @@ export function SpeechToTextExample() {
     "[superapp] [React] 🔄 Component rendering - state:",
     state,
     "isListening:",
-    isListening
+    isListening,
   );
   const [transcript, setTranscript] = useState<string>("");
   const [partialTranscript, setPartialTranscript] = useState<string>("");
+  const [lastResultJson, setLastResultJson] = useState<unknown>(null);
   const [error, setError] = useState<string | null>(null);
   const [available, setAvailable] = useState<boolean | null>(null);
   const [permission, setPermission] = useState<string>("unknown");
   const [supportedLanguages, setSupportedLanguages] = useState<string[]>([]);
   const [selectedLanguage, setSelectedLanguage] = useState<string>(
-    Language.AR_MA
+    Language.AR_MA,
   );
 
   useEffect(() => {
@@ -44,27 +45,31 @@ export function SpeechToTextExample() {
       setIsListening(state === RecognitionState.LISTENING);
       console.log(
         "[superapp] [React] setIsListening called with:",
-        state === RecognitionState.LISTENING
+        state === RecognitionState.LISTENING,
       );
       console.log(
         "[superapp] [React] State updated to:",
         state,
         "isListening:",
-        state === RecognitionState.LISTENING
+        state === RecognitionState.LISTENING,
       );
     });
 
     // Listen to partial results
-    const unsubPartial = speech.on("partialResult", ({ result }: any) => {
+    const unsubPartial = speech.on("partialResult", (event: any) => {
+      const { result } = event;
       console.log("[superapp] [React] partialResult event:", result.transcript);
       setPartialTranscript(result.transcript);
+      setLastResultJson({ type: "partialResult", ...event });
     });
 
     // Listen to final results
     const unsubResult = speech.on("result", ({ result }: any) => {
       console.log("[superapp] [React] result event:", result.transcript);
+      console.log("[superapp] [React] result :", result);
       setTranscript(result.transcript);
       setPartialTranscript("");
+      setLastResultJson({ type: "result", ...event });
     });
 
     // Listen to errors
@@ -82,7 +87,7 @@ export function SpeechToTextExample() {
     const unsubStopped = speech.on("listeningStopped", ({ duration }: any) => {
       console.log(
         "[superapp] [React] listeningStopped event, duration:",
-        duration
+        duration,
       );
     });
 
@@ -127,7 +132,7 @@ export function SpeechToTextExample() {
       setPermission(status);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to request permission"
+        err instanceof Error ? err.message : "Failed to request permission",
       );
     }
   };
@@ -137,6 +142,7 @@ export function SpeechToTextExample() {
       setError(null);
       setTranscript("");
       setPartialTranscript("");
+      setLastResultJson(null);
 
       if (permission !== "granted") {
         const status = await speech.requestPermission();
@@ -154,7 +160,7 @@ export function SpeechToTextExample() {
       });
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to start listening"
+        err instanceof Error ? err.message : "Failed to start listening",
       );
     }
   };
@@ -229,8 +235,8 @@ export function SpeechToTextExample() {
                 permission === "granted"
                   ? "#4caf50"
                   : permission === "denied"
-                  ? "#f44336"
-                  : "#ff9800",
+                    ? "#f44336"
+                    : "#ff9800",
             }}
           >
             {permission}
@@ -332,6 +338,36 @@ export function SpeechToTextExample() {
             <div style={{ color: "#999" }}>No transcript yet...</div>
           )}
         </div>
+      </div>
+
+      {/* Whole result as JSON */}
+      <div
+        style={{
+          background: "#f5f5f5",
+          padding: "15px",
+          borderRadius: "8px",
+          marginBottom: "20px",
+        }}
+      >
+        <strong>Result (whole payload as JSON):</strong>
+        <pre
+          style={{
+            marginTop: "10px",
+            padding: "12px",
+            background: "#fff",
+            borderRadius: "4px",
+            fontSize: "12px",
+            overflow: "auto",
+            maxHeight: "320px",
+            whiteSpace: "pre-wrap",
+            wordBreak: "break-word",
+            border: "1px solid #dee2e6",
+          }}
+        >
+          {lastResultJson != null
+            ? JSON.stringify(lastResultJson, null, 2)
+            : "No result yet. Start listening to see the full payload here."}
+        </pre>
       </div>
 
       {/* Controls */}
