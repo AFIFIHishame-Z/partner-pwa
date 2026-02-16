@@ -134,7 +134,7 @@ export function SpeechToTextExample() {
       setPermission(status);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to request permission",
+        err instanceof Error ? err.message : "Échec de la demande d'autorisation",
       );
     }
   };
@@ -150,7 +150,7 @@ export function SpeechToTextExample() {
         const status = await speech.requestPermission();
         setPermission(status);
         if (status !== "granted") {
-          setError("Microphone permission is required");
+          setError("L'autorisation du microphone est requise");
           return;
         }
       }
@@ -162,7 +162,7 @@ export function SpeechToTextExample() {
       });
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to start listening",
+        err instanceof Error ? err.message : "Échec du démarrage de l'écoute",
       );
     }
   };
@@ -174,7 +174,7 @@ export function SpeechToTextExample() {
       // instanceKey is incremented in listeningStopped listener → new SpeechToText for next start
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Failed to stop listening",
+        err instanceof Error ? err.message : "Échec de l'arrêt de l'écoute",
       );
     }
   };
@@ -203,7 +203,7 @@ export function SpeechToTextExample() {
       }}
     >
       <h2 style={{ marginBottom: "20px", color: "#333" }}>
-        🎤 Speech-to-Text Example
+        🎤 Reconnaissance vocale
       </h2>
 
       {/* Status Section */}
@@ -216,7 +216,7 @@ export function SpeechToTextExample() {
         }}
       >
         <div style={{ marginBottom: "10px" }}>
-          <strong>State:</strong>{" "}
+          <strong>État :</strong>{" "}
           <span
             style={{
               padding: "4px 8px",
@@ -231,18 +231,18 @@ export function SpeechToTextExample() {
         </div>
 
         <div style={{ marginBottom: "10px" }}>
-          <strong>Available:</strong>{" "}
+          <strong>Disponible :</strong>{" "}
           {available === null ? (
-            "Checking..."
+            "Vérification..."
           ) : available ? (
-            <span style={{ color: "#4caf50" }}>✅ Yes</span>
+            <span style={{ color: "#4caf50" }}>✅ Oui</span>
           ) : (
-            <span style={{ color: "#f44336" }}>❌ No</span>
+            <span style={{ color: "#f44336" }}>❌ Non</span>
           )}
         </div>
 
         <div style={{ marginBottom: "10px" }}>
-          <strong>Permission:</strong>{" "}
+          <strong>Autorisation :</strong>{" "}
           <span
             style={{
               color:
@@ -253,13 +253,13 @@ export function SpeechToTextExample() {
                     : "#ff9800",
             }}
           >
-            {permission}
+            {permission === "granted" ? "Autorisé" : permission === "denied" ? "Refusé" : permission === "prompt" ? "À demander" : permission}
           </span>
         </div>
 
         {supportedLanguages.length > 0 && (
           <div style={{ marginBottom: "10px" }}>
-            <strong>Supported Languages:</strong>{" "}
+            <strong>Langues prises en charge :</strong>{" "}
             {supportedLanguages.join(", ")}
           </div>
         )}
@@ -274,7 +274,7 @@ export function SpeechToTextExample() {
               marginTop: "10px",
             }}
           >
-            <strong>Error:</strong> {error}
+            <strong>Erreur :</strong> {error}
           </div>
         )}
       </div>
@@ -290,7 +290,7 @@ export function SpeechToTextExample() {
           }}
         >
           <label style={{ display: "block", marginBottom: "10px" }}>
-            <strong>Language:</strong>
+            <strong>Langue :</strong>
             <select
               value={selectedLanguage}
               onChange={(e) => setSelectedLanguage(e.target.value)}
@@ -321,7 +321,7 @@ export function SpeechToTextExample() {
           minHeight: "100px",
         }}
       >
-        <strong>Transcript:</strong>
+        <strong>Transcription :</strong>
         <div
           style={{
             marginTop: "10px",
@@ -349,7 +349,7 @@ export function SpeechToTextExample() {
             </div>
           )}
           {!partialTranscript && !transcript && !lastResultWasEmpty && (
-            <div style={{ color: "#999" }}>No transcript yet...</div>
+            <div style={{ color: "#999" }}>Aucune transcription pour l'instant...</div>
           )}
           {lastResultWasEmpty && (
             <div
@@ -359,7 +359,7 @@ export function SpeechToTextExample() {
                 marginTop: "8px",
               }}
             >
-              No speech detected. Please try again.
+              Aucune parole détectée. Veuillez réessayer.
             </div>
           )}
         </div>
@@ -380,7 +380,7 @@ export function SpeechToTextExample() {
               fontSize: "14px",
             }}
           >
-            Request Permission
+            Demander l'autorisation
           </button>
         )}
 
@@ -403,7 +403,7 @@ export function SpeechToTextExample() {
             fontSize: "14px",
           }}
         >
-          🎤 Start recording
+          🎤 Démarrer l'enregistrement
         </button>
         <button
           onClick={handleStopListening}
@@ -418,7 +418,7 @@ export function SpeechToTextExample() {
             fontSize: "14px",
           }}
         >
-          ⏹ Stop recording
+          ⏹ Arrêter l'enregistrement
         </button>
       </div>
     </div>

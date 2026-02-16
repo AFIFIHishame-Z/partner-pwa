@@ -12,9 +12,48 @@ import { VoiceRecorderCapacitorWithCheckpoints } from "./components/VoiceRecorde
 // import { VoiceRecorderCapacitorSimple } from "./components/VoiceRecorderCapacitorSimple";
 // import { VoiceRecorderCapacitorWithCheckpoints } from "./components/VoiceRecorderCapacitorWithCheckpoints";
 
+interface NavigationRequest {
+  type: "NAVIGATION_REQUEST";
+  route: string;
+}
+
+function sendMessageToParent(navigationRequest: NavigationRequest): void {
+  window.parent.postMessage(navigationRequest, "*");
+}
+
+function requestNavigation(): void {
+  const navigationRequest: NavigationRequest = {
+    type: "NAVIGATION_REQUEST",
+    route: "/worldmap",
+  };
+  sendMessageToParent(navigationRequest);
+}
+
 function App() {
   return (
     <>
+      {/* Back to Super App - top left */}
+      <button
+        type="button"
+        onClick={requestNavigation}
+        style={{
+          position: "fixed",
+          top: "16px",
+          left: "16px",
+          zIndex: 9999,
+          padding: "8px 16px",
+          fontSize: "14px",
+          fontWeight: 600,
+          color: "#fff",
+          backgroundColor: "#6366f1",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+          boxShadow: "0 2px 8px rgba(99, 102, 241, 0.4)",
+        }}
+      >
+        ← Retour à la Super App
+      </button>
       {/* <TestSpeechToTextPackage/> */}
       {/* <MyComponent /> */}
       <SpeechToTextExample />
@@ -25,7 +64,7 @@ function App() {
 
       {/* Capacitor Voice Recorder Examples */}
       <VoiceRecorderCapacitorSimple />
-      <VoiceRecorderCapacitorWithCheckpoints />
+      {/* <VoiceRecorderCapacitorWithCheckpoints /> */}
       {/* <div
         style={{
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",

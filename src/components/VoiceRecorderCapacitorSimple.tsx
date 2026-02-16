@@ -70,7 +70,7 @@ export function VoiceRecorderCapacitorSimple() {
       const status = await recorder.checkPermission();
       setPermission(status);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to check permission");
+      setError(e instanceof Error ? e.message : "Échec de la vérification de l'autorisation");
     }
   };
 
@@ -79,7 +79,7 @@ export function VoiceRecorderCapacitorSimple() {
       const status = await recorder.requestPermission();
       setPermission(status);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to request permission");
+      setError(e instanceof Error ? e.message : "Échec de la demande d'autorisation");
     }
   };
 
@@ -92,7 +92,7 @@ export function VoiceRecorderCapacitorSimple() {
         const p = await recorder.requestPermission();
         setPermission(p);
         if (p !== "granted") {
-          setError("Microphone permission is required");
+          setError("L'autorisation du microphone est requise");
           return;
         }
       }
@@ -108,7 +108,7 @@ export function VoiceRecorderCapacitorSimple() {
         },
       });
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to start recording");
+      setError(e instanceof Error ? e.message : "Échec du démarrage de l'enregistrement");
     }
   };
 
@@ -125,7 +125,7 @@ export function VoiceRecorderCapacitorSimple() {
 
       setRecording(result);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to stop recording");
+      setError(e instanceof Error ? e.message : "Échec de l'arrêt de l'enregistrement");
     }
   };
 
@@ -148,7 +148,7 @@ export function VoiceRecorderCapacitorSimple() {
           color: "#1e293b",
         }}
       >
-        🎤 Voice Recorder (Capacitor) - Simple Mode
+        🎤 Enregistreur vocal (Capacitor) - Mode simple
       </h2>
 
       {available !== null && (
@@ -159,13 +159,13 @@ export function VoiceRecorderCapacitorSimple() {
             color: available ? "#22c55e" : "#ef4444",
           }}
         >
-          Status:{" "}
-          <strong>{available ? "✅ Available" : "❌ Not Available"}</strong>
+          État :{" "}
+          <strong>{available ? "✅ Disponible" : "❌ Indisponible"}</strong>
         </div>
       )}
 
       <div style={{ fontSize: "0.9rem", marginBottom: "12px" }}>
-        Permission: <strong>{permission}</strong>
+        Autorisation : <strong>{permission === "granted" ? "Autorisé" : permission === "denied" ? "Refusé" : permission === "prompt" ? "À demander" : permission}</strong>
       </div>
 
       {error && (
@@ -205,7 +205,7 @@ export function VoiceRecorderCapacitorSimple() {
             cursor: "pointer",
           }}
         >
-          Check Permission
+          Vérifier l'autorisation
         </button>
 
         <button
@@ -221,7 +221,7 @@ export function VoiceRecorderCapacitorSimple() {
             cursor: "pointer",
           }}
         >
-          Request Permission
+          Demander l'autorisation
         </button>
 
         <button
@@ -238,7 +238,7 @@ export function VoiceRecorderCapacitorSimple() {
             cursor: isRecording ? "not-allowed" : "pointer",
           }}
         >
-          {isRecording ? "🎙️ Recording..." : "▶️ Start Recording"}
+          {isRecording ? "🎙️ Enregistrement..." : "▶️ Démarrer l'enregistrement"}
         </button>
 
         <button
@@ -255,21 +255,21 @@ export function VoiceRecorderCapacitorSimple() {
             cursor: !isRecording ? "not-allowed" : "pointer",
           }}
         >
-          ⏹️ Stop
+          ⏹️ Arrêter
         </button>
       </div>
 
       <div
         style={{ fontSize: "0.9rem", marginBottom: "8px", color: "#64748b" }}
       >
-        State: <strong style={{ color: "#1e293b" }}>{state}</strong>
+        État : <strong style={{ color: "#1e293b" }}>{state}</strong>
       </div>
 
       {isRecording && (
         <div
           style={{ fontSize: "0.9rem", marginBottom: "8px", color: "#64748b" }}
         >
-          Duration:{" "}
+          Durée :{" "}
           <strong style={{ color: "#1e293b" }}>
             {formatDuration(duration)}
           </strong>
@@ -293,7 +293,7 @@ export function VoiceRecorderCapacitorSimple() {
               color: "#1e293b",
             }}
           >
-            Recording Complete
+            Enregistrement terminé
           </h3>
           <div
             style={{
@@ -343,7 +343,7 @@ export function VoiceRecorderCapacitorSimple() {
               }}
             >
               <div style={{ marginBottom: "8px", fontWeight: "600", color: "#1e293b" }}>
-                Decoded Blob Audio:
+                Audio (blob décodé) :
               </div>
               <audio
                 controls
@@ -351,7 +351,7 @@ export function VoiceRecorderCapacitorSimple() {
                 src={decodedBlobUrl}
               />
               <div style={{ marginTop: "8px", fontSize: "0.8rem", color: "#64748b" }}>
-                Base64 Audio Data url :
+                URL des données audio (Base64) :
               </div>
               {
                 decodedBlobUrl
@@ -368,7 +368,7 @@ export function VoiceRecorderCapacitorSimple() {
                   color: "#64748b",
                 }}
               >
-                <strong style={{ color: "#1e293b" }}>Audio Response:</strong>
+                <strong style={{ color: "#1e293b" }}>Réponse audio :</strong>
               </div>
               <audio
                 controls
@@ -399,14 +399,14 @@ export function VoiceRecorderCapacitorSimple() {
                     color: "#1e293b",
                   }}
                 >
-                  Audio Data (Base64 - first 200 chars):
+                  Données audio (Base64 - 200 premiers caractères) :
                 </div>
                 <code style={{ fontSize: "0.8rem" }}>
                   {recording.audioData.substring(0, 200)}
                   {recording.audioData.length > 200 ? "..." : ""}
                 </code>
                 <div style={{ marginTop: "8px", fontSize: "0.75rem" }}>
-                  Full length: {recording.audioData.length} characters
+                  Longueur totale : {recording.audioData.length} caractères
                 </div>
               </div>
               <div
@@ -449,7 +449,7 @@ export function VoiceRecorderCapacitorSimple() {
                     fontSize: "0.9rem",
                   }}
                 >
-                  📥 Download Audio
+                  📥 Télécharger l'audio
                 </button>
                 <button
                   type="button"
@@ -465,7 +465,7 @@ export function VoiceRecorderCapacitorSimple() {
                     fontSize: "0.9rem",
                   }}
                 >
-                  {showFullResponse ? "📋 Hide" : "📋 Show"} Full Response
+                  {showFullResponse ? "📋 Masquer" : "📋 Afficher"} la réponse complète
                 </button>
               </div>
               {showFullResponse && (
@@ -487,7 +487,7 @@ export function VoiceRecorderCapacitorSimple() {
                       color: "#1e293b",
                     }}
                   >
-                    Full Recording Response:
+                    Réponse d'enregistrement complète :
                   </div>
                   <pre
                     style={{
@@ -504,7 +504,7 @@ export function VoiceRecorderCapacitorSimple() {
                         audioData: recording.audioData
                           ? `${recording.audioData.substring(0, 100)}... (${
                               recording.audioData.length
-                            } chars total)`
+                            } caractères au total)`
                           : null,
                       },
                       null,
