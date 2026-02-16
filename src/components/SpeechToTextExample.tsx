@@ -37,7 +37,6 @@ export function SpeechToTextExample() {
     Language.AR_MA,
   );
   const [lastResultWasEmpty, setLastResultWasEmpty] = useState(false);
-  const [restartRecording, setRestartRecording] = useState(false);
 
   useEffect(() => {
     // Listen to state changes
@@ -73,17 +72,10 @@ export function SpeechToTextExample() {
       setLastResultWasEmpty(!(result?.transcript?.trim?.() ?? ""));
     });
 
-    // Listen to errors – auto-restart when "didn't understand" / "no match"
+    // Listen to errors (SuperApp handles "didn't understand" / "no match" by auto-restarting)
     const unsubError = speech.on("error", ({ message }: any) => {
       console.log("[superapp] [React] error event:", message);
-      const msg = typeof message === "string" ? message : "";
-      const shouldRestart = /didn't understand|did not understand|no match|no speech/i.test(msg);
-      if (shouldRestart) {
-        setError(null);
-        setRestartRecording(true);
-      } else {
-        setError(message);
-      }
+      setError(message);
     });
 
     // Listen to listening started
@@ -111,28 +103,6 @@ export function SpeechToTextExample() {
       speech.destroy();
     };
   }, [speech]);
-
-  // Auto-restart recording when error was "didn't understand" / "no match"
-  useEffect(() => {
-    if (!restartRecording || !speech || permission !== "granted" || !available) return;
-    const timer = setTimeout(async () => {
-      setRestartRecording(false);
-      setError(null);
-      setTranscript("");
-      setPartialTranscript("");
-      setLastResultWasEmpty(false);
-      try {
-        await speech.startListening({
-          language: selectedLanguage,
-          partialResults: false,
-          popup: false,
-        });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to start listening");
-      }
-    }, 600);
-    return () => clearTimeout(timer);
-  }, [restartRecording, speech, permission, available, selectedLanguage]);
 
   // Check availability on mount
   useEffect(() => {
