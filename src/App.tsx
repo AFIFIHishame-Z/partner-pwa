@@ -1,5 +1,7 @@
 import "./App.css";
 import { SpeechToTextExample } from "./components/SpeechToTextExample";
+import { VoiceRecorderCapacitorSimple } from "./components/VoiceRecorderCapacitorSimple";
+import { VoiceRecorderCapacitorWithCheckpoints } from "./components/VoiceRecorderCapacitorWithCheckpoints";
 // import { SubmitAssessmentResultsTest } from "./components/SubmitAssessmentResultsTest";
 //import { TokenProviderExample } from "./components/TokenProviderExample";
 // import { SpeechToTextExample } from "./components/SpeechToTextExample";
@@ -22,8 +24,8 @@ function App() {
       {/* <VoiceRecorderExample /> */}
 
       {/* Capacitor Voice Recorder Examples */}
-      {/* <VoiceRecorderCapacitorSimple /> */}
-      {/* <VoiceRecorderCapacitorWithCheckpoints /> */}
+      <VoiceRecorderCapacitorSimple />
+      <VoiceRecorderCapacitorWithCheckpoints />
       {/* <div
         style={{
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
