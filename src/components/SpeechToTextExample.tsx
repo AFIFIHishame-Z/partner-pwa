@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   SpeechToText,
   RecognitionState,
@@ -6,12 +6,15 @@ import {
 } from "@superapp_men/speech-to-text";
 
 export function SpeechToTextExample() {
-  const [speech] = useState(
+  // New instance after each stop so native mic works on 2nd, 4th… attempt (plugin doesn’t re-acquire otherwise).
+  const [instanceKey, setInstanceKey] = useState(0);
+  const speech = useMemo(
     () =>
       new SpeechToText({
         timeout: 10000,
         debug: true,
       }),
+    [instanceKey]
   );
 
   const [state, setState] = useState<RecognitionState>(RecognitionState.IDLE);
@@ -26,7 +29,6 @@ export function SpeechToTextExample() {
   );
   const [transcript, setTranscript] = useState<string>("");
   const [partialTranscript, setPartialTranscript] = useState<string>("");
-  const [lastResultJson, setLastResultJson] = useState<unknown>(null);
   const [error, setError] = useState<string | null>(null);
   const [available, setAvailable] = useState<boolean | null>(null);
   const [permission, setPermission] = useState<string>("unknown");
@@ -56,21 +58,16 @@ export function SpeechToTextExample() {
     });
 
     // Listen to partial results
-    const unsubPartial = speech.on("partialResult", (event: any) => {
-      const { result } = event;
+    const unsubPartial = speech.on("partialResult", ({ result }: any) => {
       console.log("[superapp] [React] partialResult event:", result.transcript);
       setPartialTranscript(result.transcript);
-      setLastResultJson({ type: "partialResult", ...event });
     });
 
     // Listen to final results
-    const unsubResult = speech.on("result", (event: any) => {
-      const { result } = event;
+    const unsubResult = speech.on("result", ({ result }: any) => {
       console.log("[superapp] [React] result event:", result.transcript);
-      console.log("[superapp] [React] result :", result);
       setTranscript(result.transcript);
       setPartialTranscript("");
-      setLastResultJson({ type: "result", ...result });
     });
 
     // Listen to errors
@@ -90,6 +87,8 @@ export function SpeechToTextExample() {
         "[superapp] [React] listeningStopped event, duration:",
         duration,
       );
+      // New instance for next recording so native mic starts again on attempt 2, 4, 6…
+      setInstanceKey((k) => k + 1);
     });
 
     return () => {
@@ -143,7 +142,6 @@ export function SpeechToTextExample() {
       setError(null);
       setTranscript("");
       setPartialTranscript("");
-      setLastResultJson(null);
 
       if (permission !== "granted") {
         const status = await speech.requestPermission();
@@ -170,6 +168,7 @@ export function SpeechToTextExample() {
     try {
       setError(null);
       await speech.stopListening();
+      // instanceKey is incremented in listeningStopped listener → new SpeechToText for next start
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to stop listening",
@@ -352,36 +351,6 @@ export function SpeechToTextExample() {
         </div>
       </div>
 
-      {/* Whole result as JSON */}
-      <div
-        style={{
-          background: "#f5f5f5",
-          padding: "15px",
-          borderRadius: "8px",
-          marginBottom: "20px",
-        }}
-      >
-        <strong>Result (whole payload as JSON):</strong>
-        <pre
-          style={{
-            marginTop: "10px",
-            padding: "12px",
-            background: "#fff",
-            borderRadius: "4px",
-            fontSize: "12px",
-            overflow: "auto",
-            maxHeight: "320px",
-            whiteSpace: "pre-wrap",
-            wordBreak: "break-word",
-            border: "1px solid #dee2e6",
-          }}
-        >
-          {lastResultJson != null
-            ? JSON.stringify(lastResultJson, null, 2)
-            : "No result yet. Start listening to see the full payload here."}
-        </pre>
-      </div>
-
       {/* Controls */}
       <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
         {permission !== "granted" && (
@@ -422,7 +391,6 @@ export function SpeechToTextExample() {
         >
           🎤 Start recording
         </button>
-
         <button
           onClick={handleStopListening}
           disabled={!available || !isListening}
