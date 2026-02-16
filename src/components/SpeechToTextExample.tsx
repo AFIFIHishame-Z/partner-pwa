@@ -14,7 +14,7 @@ export function SpeechToTextExample() {
         timeout: 10000,
         debug: true,
       }),
-    [instanceKey]
+    [instanceKey],
   );
 
   const [state, setState] = useState<RecognitionState>(RecognitionState.IDLE);
@@ -134,7 +134,9 @@ export function SpeechToTextExample() {
       setPermission(status);
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Échec de la demande d'autorisation",
+        err instanceof Error
+          ? err.message
+          : "Échec de la demande d'autorisation",
       );
     }
   };
@@ -199,6 +201,7 @@ export function SpeechToTextExample() {
         padding: "20px",
         maxWidth: "800px",
         margin: "0 auto",
+        marginTop: "55px",
         fontFamily: "system-ui, sans-serif",
       }}
     >
@@ -253,7 +256,13 @@ export function SpeechToTextExample() {
                     : "#ff9800",
             }}
           >
-            {permission === "granted" ? "Autorisé" : permission === "denied" ? "Refusé" : permission === "prompt" ? "À demander" : permission}
+            {permission === "granted"
+              ? "Autorisé"
+              : permission === "denied"
+                ? "Refusé"
+                : permission === "prompt"
+                  ? "À demander"
+                  : permission}
           </span>
         </div>
 
@@ -349,7 +358,9 @@ export function SpeechToTextExample() {
             </div>
           )}
           {!partialTranscript && !transcript && !lastResultWasEmpty && (
-            <div style={{ color: "#999" }}>Aucune transcription pour l'instant...</div>
+            <div style={{ color: "#999" }}>
+              Aucune transcription pour l'instant...
+            </div>
           )}
           {lastResultWasEmpty && (
             <div

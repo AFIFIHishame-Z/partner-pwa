@@ -37,7 +37,7 @@ function App() {
         type="button"
         onClick={requestNavigation}
         style={{
-          position: "fixed",
+          position: "relative",
           top: "16px",
           left: "16px",
           zIndex: 9999,
