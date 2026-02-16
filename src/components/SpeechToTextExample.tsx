@@ -201,7 +201,7 @@ export function SpeechToTextExample() {
         padding: "20px",
         maxWidth: "800px",
         margin: "0 auto",
-        marginTop: "55px",
+        marginTop: "30px",
         fontFamily: "system-ui, sans-serif",
       }}
     >
