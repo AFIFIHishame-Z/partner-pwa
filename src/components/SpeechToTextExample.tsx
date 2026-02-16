@@ -36,6 +36,7 @@ export function SpeechToTextExample() {
   const [selectedLanguage, setSelectedLanguage] = useState<string>(
     Language.AR_MA,
   );
+  const [lastResultWasEmpty, setLastResultWasEmpty] = useState(false);
 
   useEffect(() => {
     // Listen to state changes
@@ -68,6 +69,7 @@ export function SpeechToTextExample() {
       console.log("[superapp] [React] result event:", result.transcript);
       setTranscript(result.transcript);
       setPartialTranscript("");
+      setLastResultWasEmpty(!(result?.transcript?.trim?.() ?? ""));
     });
 
     // Listen to errors
@@ -142,6 +144,7 @@ export function SpeechToTextExample() {
       setError(null);
       setTranscript("");
       setPartialTranscript("");
+      setLastResultWasEmpty(false);
 
       if (permission !== "granted") {
         const status = await speech.requestPermission();
@@ -345,8 +348,19 @@ export function SpeechToTextExample() {
               {transcript}
             </div>
           )}
-          {!partialTranscript && !transcript && (
+          {!partialTranscript && !transcript && !lastResultWasEmpty && (
             <div style={{ color: "#999" }}>No transcript yet...</div>
+          )}
+          {lastResultWasEmpty && (
+            <div
+              style={{
+                color: "#e65100",
+                fontWeight: 500,
+                marginTop: "8px",
+              }}
+            >
+              No speech detected. Please try again.
+            </div>
           )}
         </div>
       </div>
