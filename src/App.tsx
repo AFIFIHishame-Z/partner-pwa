@@ -59,13 +59,14 @@ function App() {
       {/* <MyComponent /> */}
       <SpeechToTextExample />
       {/* <Exercise1 /> */}
-      <SubmitAssessmentResultsTest />
       {/* <TokenProviderExample /> */}
       {/* <VoiceRecorderExample /> */}
 
       {/* Capacitor Voice Recorder Examples */}
       <VoiceRecorderCapacitorSimple />
       {/* <VoiceRecorderCapacitorWithCheckpoints /> */}
+      <SubmitAssessmentResultsTest />
+
       {/* <div
         style={{
           background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
