@@ -63,6 +63,8 @@ interface BuilderQuestion {
   attemptsCount?: number;
   questionTextFr?: string;
   questionTextAr?: string;
+  tags?: string;
+  metadata?: string;
 }
 
 interface BuilderSkill {
@@ -240,6 +242,8 @@ export function SubmitAssessmentResultsTest() {
                   q.questionTextAr !== undefined
                 )
                   qb.questionText(q.questionTextFr, q.questionTextAr);
+                if (q.tags !== undefined) qb.tags(q.tags);
+                if (q.metadata !== undefined) qb.metadata(q.metadata);
                 return qb.build();
               })
             )
@@ -787,6 +791,28 @@ export function SubmitAssessmentResultsTest() {
                           })
                         }
                         style={{ ...inputStyle, width: "100px" }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="tags"
+                        value={q.tags ?? ""}
+                        onChange={(e) =>
+                          updateBuilderQuestion(sIdx, qIdx, {
+                            tags: e.target.value || undefined,
+                          })
+                        }
+                        style={{ ...inputStyle, width: "90px" }}
+                      />
+                      <input
+                        type="text"
+                        placeholder="metadata"
+                        value={q.metadata ?? ""}
+                        onChange={(e) =>
+                          updateBuilderQuestion(sIdx, qIdx, {
+                            metadata: e.target.value || undefined,
+                          })
+                        }
+                        style={{ ...inputStyle, width: "110px" }}
                       />
                       <button
                         type="button"
