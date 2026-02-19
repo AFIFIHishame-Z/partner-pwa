@@ -95,20 +95,24 @@ const defaultBuilderSkill = (order: number): BuilderSkill => ({
 export function SubmitAssessmentResultsTest() {
   const [mode, setMode] = useState<BuildMode>("json");
   const [jsonInput, setJsonInput] = useState(() =>
-    JSON.stringify(SAMPLE_PAYLOAD, null, 2)
+    JSON.stringify(SAMPLE_PAYLOAD, null, 2),
   );
   const [parseError, setParseError] = useState<string | null>(null);
-  const [validationErrors, setValidationErrors] = useState<string[] | null>(null);
-  const [result, setResult] = useState<SubmitAssessmentResultsApiResult | null>(null);
+  const [validationErrors, setValidationErrors] = useState<string[] | null>(
+    null,
+  );
+  const [result, setResult] = useState<SubmitAssessmentResultsApiResult | null>(
+    null,
+  );
   const [submitting, setSubmitting] = useState(false);
 
   // Builder mode state
   const [builderStudentId, setBuilderStudentId] = useState(
-    "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+    "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   );
   const [builderPartnerCode, setBuilderPartnerCode] = useState("PARTNER001");
   const [builderAttemptId, setBuilderAttemptId] = useState(
-    () => `attempt-${Date.now()}`
+    () => `attempt-${Date.now()}`,
   );
   const [builderAser, setBuilderAser] = useState(false);
   const [builderTotalSkills, setBuilderTotalSkills] = useState(2);
@@ -125,7 +129,7 @@ export function SubmitAssessmentResultsTest() {
         timeout: 30000,
         debug: true,
       }),
-    []
+    [],
   );
 
   const loadSample = useCallback(() => {
@@ -139,26 +143,30 @@ export function SubmitAssessmentResultsTest() {
     setResult(null);
   }, []);
 
-  const parsePayload = useCallback((): SubmitAssessmentResultsPartnerPayload | null => {
-    setParseError(null);
-    setValidationErrors(null);
-    try {
-      const parsed = JSON.parse(jsonInput) as SubmitAssessmentResultsPartnerPayload;
-      if (typeof parsed !== "object" || parsed === null) {
-        setParseError("Payload must be a JSON object.");
+  const parsePayload =
+    useCallback((): SubmitAssessmentResultsPartnerPayload | null => {
+      setParseError(null);
+      setValidationErrors(null);
+      try {
+        const parsed = JSON.parse(
+          jsonInput,
+        ) as SubmitAssessmentResultsPartnerPayload;
+        if (typeof parsed !== "object" || parsed === null) {
+          setParseError("Payload must be a JSON object.");
+          return null;
+        }
+        return parsed;
+      } catch (e) {
+        setParseError(e instanceof Error ? e.message : "Invalid JSON");
         return null;
       }
-      return parsed;
-    } catch (e) {
-      setParseError(e instanceof Error ? e.message : "Invalid JSON");
-      return null;
-    }
-  }, [jsonInput]);
+    }, [jsonInput]);
 
-  const getPayloadToSubmit = useCallback((): SubmitAssessmentResultsPartnerPayload | null => {
-    if (mode === "json") return parsePayload();
-    return builtPayload;
-  }, [mode, parsePayload, builtPayload]);
+  const getPayloadToSubmit =
+    useCallback((): SubmitAssessmentResultsPartnerPayload | null => {
+      if (mode === "json") return parsePayload();
+      return builtPayload;
+    }, [mode, parsePayload, builtPayload]);
 
   const handleValidate = useCallback(() => {
     const payload = mode === "json" ? parsePayload() : builtPayload;
@@ -172,9 +180,7 @@ export function SubmitAssessmentResultsTest() {
       setResult(null);
       return;
     }
-    setValidationErrors(
-      validation.errors.map((e) => `${e.key}: ${e.message}`)
-    );
+    setValidationErrors(validation.errors.map((e) => `${e.key}: ${e.message}`));
   }, [mode, parsePayload, builtPayload]);
 
   const handleSubmit = useCallback(async () => {
@@ -212,14 +218,11 @@ export function SubmitAssessmentResultsTest() {
           const sb = AssessmentSubmission.skill(
             s.skillCode,
             s.skillOrder,
-            s.passed
+            s.passed,
           );
           if (s.titleFr !== undefined || s.titleAr !== undefined)
             sb.title(s.titleFr, s.titleAr);
-          if (
-            s.descriptionFr !== undefined ||
-            s.descriptionAr !== undefined
-          )
+          if (s.descriptionFr !== undefined || s.descriptionAr !== undefined)
             sb.description(s.descriptionFr, s.descriptionAr);
           return sb
             .questions(
@@ -227,7 +230,7 @@ export function SubmitAssessmentResultsTest() {
                 const qb = AssessmentSubmission.question(
                   q.questionCode,
                   q.isCorrect,
-                  q.questionRole as QuestionRole
+                  q.questionRole as QuestionRole,
                 ).order(q.questionOrder);
                 if (q.responseTime != null) {
                   const rt =
@@ -245,10 +248,10 @@ export function SubmitAssessmentResultsTest() {
                 if (q.tags !== undefined) qb.tags(q.tags);
                 if (q.metadata !== undefined) qb.metadata(q.metadata);
                 return qb.build();
-              })
+              }),
             )
             .build();
-        }
+        },
       );
 
       const payload = AssessmentSubmission.builder()
@@ -262,9 +265,7 @@ export function SubmitAssessmentResultsTest() {
 
       setBuiltPayload(payload);
     } catch (e) {
-      setValidationErrors([
-        e instanceof Error ? e.message : "Builder failed",
-      ]);
+      setValidationErrors([e instanceof Error ? e.message : "Builder failed"]);
       setBuiltPayload(null);
     }
   }, [
@@ -277,20 +278,17 @@ export function SubmitAssessmentResultsTest() {
   ]);
 
   const addBuilderSkill = useCallback(() => {
-    setBuilderSkills((prev) => [
-      ...prev,
-      defaultBuilderSkill(prev.length + 1),
-    ]);
+    setBuilderSkills((prev) => [...prev, defaultBuilderSkill(prev.length + 1)]);
     setBuilderTotalSkills((n) => n + 1);
   }, []);
 
   const updateBuilderSkill = useCallback(
     (index: number, patch: Partial<BuilderSkill>) => {
       setBuilderSkills((prev) =>
-        prev.map((s, i) => (i === index ? { ...s, ...patch } : s))
+        prev.map((s, i) => (i === index ? { ...s, ...patch } : s)),
       );
     },
-    []
+    [],
   );
 
   const removeBuilderSkill = useCallback((index: number) => {
@@ -314,8 +312,8 @@ export function SubmitAssessmentResultsTest() {
                 },
               ],
             }
-          : s
-      )
+          : s,
+      ),
     );
   }, []);
 
@@ -323,7 +321,7 @@ export function SubmitAssessmentResultsTest() {
     (
       skillIndex: number,
       questionIndex: number,
-      patch: Partial<BuilderQuestion>
+      patch: Partial<BuilderQuestion>,
     ) => {
       setBuilderSkills((prev) =>
         prev.map((s, i) =>
@@ -331,14 +329,14 @@ export function SubmitAssessmentResultsTest() {
             ? {
                 ...s,
                 questions: s.questions.map((q, qi) =>
-                  qi === questionIndex ? { ...q, ...patch } : q
+                  qi === questionIndex ? { ...q, ...patch } : q,
                 ),
               }
-            : s
-        )
+            : s,
+        ),
       );
     },
-    []
+    [],
   );
 
   const removeBuilderQuestion = useCallback(
@@ -350,11 +348,11 @@ export function SubmitAssessmentResultsTest() {
                 ...s,
                 questions: s.questions.filter((_, qi) => qi !== questionIndex),
               }
-            : s
-        )
+            : s,
+        ),
       );
     },
-    []
+    [],
   );
 
   const copyBuiltToJson = useCallback(() => {
@@ -406,7 +404,8 @@ export function SubmitAssessmentResultsTest() {
           onClick={() => setMode("json")}
           style={{
             ...btnStyle(mode === "json" ? "#0d6efd" : "#6c757d"),
-            borderBottom: mode === "json" ? "2px solid #0d6efd" : "2px solid transparent",
+            borderBottom:
+              mode === "json" ? "2px solid #0d6efd" : "2px solid transparent",
             marginBottom: "-1px",
           }}
         >
@@ -418,7 +417,9 @@ export function SubmitAssessmentResultsTest() {
           style={{
             ...btnStyle(mode === "builder" ? "#0d6efd" : "#6c757d"),
             borderBottom:
-              mode === "builder" ? "2px solid #0d6efd" : "2px solid transparent",
+              mode === "builder"
+                ? "2px solid #0d6efd"
+                : "2px solid transparent",
             marginBottom: "-1px",
           }}
         >
@@ -459,7 +460,11 @@ export function SubmitAssessmentResultsTest() {
             />
           </div>
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-            <button type="button" onClick={loadSample} style={btnStyle("#6c757d")}>
+            <button
+              type="button"
+              onClick={loadSample}
+              style={btnStyle("#6c757d")}
+            >
               Load sample
             </button>
             <button
@@ -518,7 +523,9 @@ export function SubmitAssessmentResultsTest() {
                 onChange={(e) => setBuilderAttemptId(e.target.value)}
                 style={inputStyle}
               />
-              <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <label
+                style={{ display: "flex", alignItems: "center", gap: "8px" }}
+              >
                 <input
                   type="checkbox"
                   checked={builderAser}
@@ -548,7 +555,9 @@ export function SubmitAssessmentResultsTest() {
                 marginBottom: "8px",
               }}
             >
-              <strong>Skills (built with AssessmentSubmission.skill / .question)</strong>
+              <strong>
+                Skills (built with AssessmentSubmission.skill / .question)
+              </strong>
               <button
                 type="button"
                 onClick={addBuilderSkill}
@@ -597,7 +606,13 @@ export function SubmitAssessmentResultsTest() {
                     }
                     style={{ ...inputStyle, width: "70px" }}
                   />
-                  <label style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                  <label
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                    }}
+                  >
                     <input
                       type="checkbox"
                       checked={skill.passed}
@@ -618,7 +633,8 @@ export function SubmitAssessmentResultsTest() {
                 <div
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))",
+                    gridTemplateColumns:
+                      "repeat(auto-fill, minmax(160px, 1fr))",
                     gap: "8px",
                     marginBottom: "8px",
                   }}
@@ -774,8 +790,7 @@ export function SubmitAssessmentResultsTest() {
                         value={q.questionTextFr ?? ""}
                         onChange={(e) =>
                           updateBuilderQuestion(sIdx, qIdx, {
-                            questionTextFr:
-                              e.target.value || undefined,
+                            questionTextFr: e.target.value || undefined,
                           })
                         }
                         style={{ ...inputStyle, width: "100px" }}
@@ -786,8 +801,7 @@ export function SubmitAssessmentResultsTest() {
                         value={q.questionTextAr ?? ""}
                         onChange={(e) =>
                           updateBuilderQuestion(sIdx, qIdx, {
-                            questionTextAr:
-                              e.target.value || undefined,
+                            questionTextAr: e.target.value || undefined,
                           })
                         }
                         style={{ ...inputStyle, width: "100px" }}
@@ -835,7 +849,14 @@ export function SubmitAssessmentResultsTest() {
             ))}
           </div>
 
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginBottom: "12px" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "10px",
+              flexWrap: "wrap",
+              marginBottom: "12px",
+            }}
+          >
             <button
               type="button"
               onClick={handleBuildWithBuilder}
