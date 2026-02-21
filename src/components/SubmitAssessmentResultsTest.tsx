@@ -10,7 +10,6 @@ import {
 } from "@superapp_men/submit-assessment-results";
 
 const SAMPLE_PAYLOAD: SubmitAssessmentResultsPartnerPayload = {
-  studentId: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   partnerCode: "PARTNER001",
   attemptId: `attempt-${Date.now()}`,
   isAser: false,
@@ -107,9 +106,6 @@ export function SubmitAssessmentResultsTest() {
   const [submitting, setSubmitting] = useState(false);
 
   // Builder mode state
-  const [builderStudentId, setBuilderStudentId] = useState(
-    "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  );
   const [builderPartnerCode, setBuilderPartnerCode] = useState("PARTNER001");
   const [builderAttemptId, setBuilderAttemptId] = useState(
     () => `attempt-${Date.now()}`,
@@ -255,7 +251,6 @@ export function SubmitAssessmentResultsTest() {
       );
 
       const payload = AssessmentSubmission.builder()
-        .setStudentId(builderStudentId)
         .setPartnerCode(builderPartnerCode)
         .setAttemptId(builderAttemptId)
         .setAser(builderAser)
@@ -269,7 +264,6 @@ export function SubmitAssessmentResultsTest() {
       setBuiltPayload(null);
     }
   }, [
-    builderStudentId,
     builderPartnerCode,
     builderAttemptId,
     builderAser,
@@ -445,7 +439,7 @@ export function SubmitAssessmentResultsTest() {
               id="payload-json"
               value={jsonInput}
               onChange={(e) => setJsonInput(e.target.value)}
-              placeholder='{ "studentId": "...", "partnerCode": "...", ... }'
+              placeholder='{ "partnerCode": "...", "attemptId": "...", ... }'
               style={{
                 width: "100%",
                 minHeight: "220px",
@@ -502,13 +496,6 @@ export function SubmitAssessmentResultsTest() {
                 gap: "10px",
               }}
             >
-              <input
-                type="text"
-                placeholder="studentId (UUID)"
-                value={builderStudentId}
-                onChange={(e) => setBuilderStudentId(e.target.value)}
-                style={inputStyle}
-              />
               <input
                 type="text"
                 placeholder="partnerCode"
