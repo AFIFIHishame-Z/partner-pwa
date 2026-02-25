@@ -1,4 +1,5 @@
 import "./App.css";
+import { DeviceStorageTest } from "./components/DeviceStorageTest";
 import { SpeechToTextExample } from "./components/SpeechToTextExample";
 import { SubmitAssessmentResultsTest } from "./components/SubmitAssessmentResultsTest";
 import { VoiceRecorderCapacitorSimple } from "./components/VoiceRecorderCapacitorSimple";
@@ -66,6 +67,7 @@ function App() {
       <VoiceRecorderCapacitorSimple />
       {/* <VoiceRecorderCapacitorWithCheckpoints /> */}
       <SubmitAssessmentResultsTest />
+      <DeviceStorageTest />
 
       {/* <div
         style={{
