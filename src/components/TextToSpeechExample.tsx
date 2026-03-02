@@ -399,37 +399,7 @@ export function TextToSpeechExample() {
           Parler
         </button>
 
-        <button
-          onClick={handlePause}
-          disabled={state !== SpeechState.SPEAKING}
-          style={{
-            padding: "10px 20px",
-            background: state !== SpeechState.SPEAKING ? "#ccc" : "#ff9800",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: state !== SpeechState.SPEAKING ? "not-allowed" : "pointer",
-            fontSize: "14px",
-          }}
-        >
-          Pause
-        </button>
-
-        <button
-          onClick={handleResume}
-          disabled={state !== SpeechState.PAUSED}
-          style={{
-            padding: "10px 20px",
-            background: state !== SpeechState.PAUSED ? "#ccc" : "#2196f3",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: state !== SpeechState.PAUSED ? "not-allowed" : "pointer",
-            fontSize: "14px",
-          }}
-        >
-          Reprendre
-        </button>
+      
 
         <button
           onClick={handleStop}
