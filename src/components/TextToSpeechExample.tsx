@@ -111,21 +111,21 @@ export function TextToSpeechExample() {
     }
   };
 
-  const handlePause = async () => {
-    try {
-      await tts.pause();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Échec de la pause");
-    }
-  };
+  // const handlePause = async () => {
+  //   try {
+  //     await tts.pause();
+  //   } catch (err) {
+  //     setError(err instanceof Error ? err.message : "Échec de la pause");
+  //   }
+  // };
 
-  const handleResume = async () => {
-    try {
-      await tts.resume();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Échec de la reprise");
-    }
-  };
+  // const handleResume = async () => {
+  //   try {
+  //     await tts.resume();
+  //   } catch (err) {
+  //     setError(err instanceof Error ? err.message : "Échec de la reprise");
+  //   }
+  // };
 
   const handleQuickSpeak = async (sampleText: string, lang: string) => {
     try {
