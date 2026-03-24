@@ -39,10 +39,13 @@ export function VoiceRecorderCapacitorSimple() {
   useEffect(() => {
     // Check availability on mount
     recorder.isAvailable().then(setAvailable);
+console.log("test stateChange");
 
     // State changes
     const unsubState = recorder.on("stateChange", ({ state }: any) => {
       setState(state);
+      console.log("test stateChange 2");
+
       console.log("stateChange : " + JSON.stringify(state));
     });
 
