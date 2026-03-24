@@ -43,11 +43,13 @@ export function VoiceRecorderCapacitorSimple() {
     // State changes
     const unsubState = recorder.on("stateChange", ({ state }: any) => {
       setState(state);
+      console.log("stateChange : " + JSON.stringify(state));
     });
 
     // Progress updates
     const unsubProgress = recorder.on("progress", ({ duration }: any) => {
       setDuration(duration);
+      console.log("progress : " + JSON.stringify(duration));
     });
 
     // Error handling
