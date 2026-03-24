@@ -4,6 +4,7 @@ import { SpeechToTextExample } from "./components/SpeechToTextExample";
 import { TextToSpeechExample } from "./components/TextToSpeechExample";
 import { SubmitAssessmentResultsTest } from "./components/SubmitAssessmentResultsTest";
 import { VoiceRecorderCapacitorSimple } from "./components/VoiceRecorderCapacitorSimple";
+import { VoiceRecorderCapacitorWithCheckpoints } from "./components/VoiceRecorderCapacitorWithCheckpoints";
 // import { VoiceRecorderCapacitorWithCheckpoints } from "./components/VoiceRecorderCapacitorWithCheckpoints";
 // import { SubmitAssessmentResultsTest } from "./components/SubmitAssessmentResultsTest";
 //import { TokenProviderExample } from "./components/TokenProviderExample";
@@ -67,7 +68,7 @@ function App() {
 
       {/* Capacitor Voice Recorder Examples */}
       <VoiceRecorderCapacitorSimple />
-      {/* <VoiceRecorderCapacitorWithCheckpoints /> */}
+      <VoiceRecorderCapacitorWithCheckpoints />
       <SubmitAssessmentResultsTest />
       <DeviceStorageTest />
 
