@@ -16,7 +16,7 @@
     "@superapp_men/text-to-speech": "^1.0.1",
     "@superapp_men/token-provider": "^1.0.11",
     "@superapp_men/voice-recorder": "^1.0.1",
-    "@superapp_men/voice-recorder-capacitor": "^1.0.6",
+    "@superapp_men/voice-recorder-capacitor": "^1.1.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },

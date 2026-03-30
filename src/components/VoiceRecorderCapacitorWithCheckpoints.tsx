@@ -10,6 +10,53 @@ import {
   type PermissionStatus,
 } from "@superapp_men/voice-recorder-capacitor";
 
+// ── Requested config (displayed in the UI so you can compare with responses) ──
+const REQUESTED_CONFIG = {
+  isCheckpoints: true,
+  checkpointInterval: 1000,
+  maxDuration: 120_000,
+  audioConfig: {
+    format: AudioFormat.WAV,
+    sampleRate: SampleRate.SR_16000,
+    bitDepth: 16,
+    channels: 1,
+  },
+};
+
+// ── Styles ────────────────────────────────────────────────────────────────────
+const card: React.CSSProperties = {
+  padding: "24px",
+  marginTop: "20px",
+  borderRadius: "16px",
+  background:
+    "linear-gradient(135deg, rgba(139,92,246,0.1), rgba(59,130,246,0.1))",
+  border: "1px solid rgba(139,92,246,0.3)",
+};
+const label: React.CSSProperties = {
+  fontSize: "0.8rem",
+  color: "#64748b",
+};
+const mono: React.CSSProperties = {
+  fontFamily: "monospace",
+  fontSize: "0.78rem",
+  background: "rgba(0,0,0,0.05)",
+  padding: "10px 12px",
+  borderRadius: "8px",
+  overflowX: "auto",
+  whiteSpace: "pre-wrap",
+  wordBreak: "break-all",
+};
+const configBadge = (match: boolean): React.CSSProperties => ({
+  display: "inline-block",
+  padding: "2px 8px",
+  borderRadius: "4px",
+  fontSize: "0.75rem",
+  fontWeight: 600,
+  marginLeft: "6px",
+  background: match ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)",
+  color: match ? "#15803d" : "#b91c1c",
+});
+
 export function VoiceRecorderCapacitorWithCheckpoints() {
   const [recorder] = useState(
     () =>
@@ -28,35 +75,23 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
   const [available, setAvailable] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // Check availability on mount
     recorder.isAvailable().then(setAvailable);
 
-    // State changes
-    const unsubState = recorder.on("stateChange", ({ state }: any) => {
-      setState(state);
-      console.log("stateChange : " + JSON.stringify(state));
-      
-    });
-
-    // Progress updates
-    const unsubProgress = recorder.on("progress", ({ duration }: any) => {
-      setDuration(duration);
-      console.log("progress : " + JSON.stringify(duration));
-
-    });
-
-    // Checkpoint created
+    const unsubState = recorder.on("stateChange", ({ state }: any) =>
+      setState(state)
+    );
+    const unsubProgress = recorder.on("progress", ({ duration }: any) =>
+      setDuration(duration)
+    );
     const unsubCheckpoint = recorder.on(
       "checkpointCreated",
       ({ checkpoint }: any) => {
         setCheckpoints((prev) => [...prev, checkpoint]);
       }
     );
-
-    // Error handling
-    const unsubError = recorder.on("error", ({ message }: any) => {
-      setError(message);
-    });
+    const unsubError = recorder.on("error", ({ message }: any) =>
+      setError(message)
+    );
 
     return () => {
       unsubState();
@@ -71,8 +106,7 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
 
   const handleCheckPermission = async () => {
     try {
-      const status = await recorder.checkPermission();
-      setPermission(status);
+      setPermission(await recorder.checkPermission());
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to check permission");
     }
@@ -80,10 +114,11 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
 
   const handleRequestPermission = async () => {
     try {
-      const status = await recorder.requestPermission();
-      setPermission(status);
+      setPermission(await recorder.requestPermission());
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to request permission");
+      setError(
+        e instanceof Error ? e.message : "Failed to request permission"
+      );
     }
   };
 
@@ -102,35 +137,15 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
         }
       }
 
-      await recorder.startRecording({
-        isCheckpoints: true, // Enable checkpoint mode
-        maxDuration: 120_000, // 2 minutes
-        audioConfig: {
-          format: AudioFormat.WAV,
-          sampleRate: SampleRate.SR_16000,
-          bitDepth: 16,
-          channels: 1, // Mono
-        },
-      });
+      await recorder.startRecording(REQUESTED_CONFIG);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to start recording");
-    }
-  };
-
-  const handleCreateCheckpoint = async () => {
-    try {
-      await recorder.createCheckpoint();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Failed to create checkpoint");
     }
   };
 
   const handleStop = async () => {
     try {
       const result = await recorder.stopRecording();
-
-      // The service now properly merges all checkpoint segments into result.audioData
-      // So we can use it directly without additional processing
       setRecording(result);
       setCheckpoints(result.checkpoints || []);
     } catch (e) {
@@ -139,16 +154,7 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
   };
 
   return (
-    <div
-      style={{
-        padding: "24px",
-        marginTop: "20px",
-        borderRadius: "16px",
-        background:
-          "linear-gradient(135deg, rgba(139,92,246,0.1), rgba(59,130,246,0.1))",
-        border: "1px solid rgba(139,92,246,0.3)",
-      }}
-    >
+    <div style={card}>
       <h2
         style={{
           marginBottom: "16px",
@@ -157,26 +163,35 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
           color: "#1e293b",
         }}
       >
-        🎙️ Voice Recorder (Capacitor) - With Checkpoints
+        Voice Recorder &mdash; Auto Checkpoints
       </h2>
 
+      {/* ── Availability / Permission / State ── */}
       {available !== null && (
         <div
           style={{
             fontSize: "0.9rem",
-            marginBottom: "12px",
+            marginBottom: "8px",
             color: available ? "#22c55e" : "#ef4444",
           }}
         >
-          Status:{" "}
-          <strong>{available ? "✅ Available" : "❌ Not Available"}</strong>
+          Device: <strong>{available ? "Available" : "Not Available"}</strong>
+        </div>
+      )}
+      <div style={{ fontSize: "0.9rem", marginBottom: "8px" }}>
+        Permission: <strong>{permission}</strong> &nbsp;|&nbsp; State:{" "}
+        <strong>{state}</strong>
+      </div>
+      {isRecording && (
+        <div style={{ fontSize: "0.9rem", marginBottom: "8px" }}>
+          Duration:{" "}
+          <strong style={{ color: "#1e293b" }}>
+            {formatDuration(duration)}
+          </strong>
         </div>
       )}
 
-      <div style={{ fontSize: "0.9rem", marginBottom: "12px" }}>
-        Permission: <strong>{permission}</strong>
-      </div>
-
+      {/* ── Error ── */}
       {error && (
         <div
           style={{
@@ -193,6 +208,7 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
         </div>
       )}
 
+      {/* ── Buttons ── */}
       <div
         style={{
           display: "flex",
@@ -201,153 +217,58 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
           flexWrap: "wrap",
         }}
       >
-        <button
-          type="button"
-          onClick={handleCheckPermission}
-          style={{
-            padding: "10px 18px",
-            borderRadius: "8px",
-            border: "1px solid rgba(59,130,246,0.3)",
-            backgroundColor: "rgba(59,130,246,0.1)",
-            color: "#1e40af",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
+        <Btn onClick={handleCheckPermission} color="blue">
           Check Permission
-        </button>
-
-        <button
-          type="button"
-          onClick={handleRequestPermission}
-          style={{
-            padding: "10px 18px",
-            borderRadius: "8px",
-            border: "1px solid rgba(59,130,246,0.3)",
-            backgroundColor: "rgba(59,130,246,0.1)",
-            color: "#1e40af",
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
-        >
+        </Btn>
+        <Btn onClick={handleRequestPermission} color="blue">
           Request Permission
-        </button>
-
-        <button
-          type="button"
-          onClick={handleStart}
-          disabled={isRecording}
-          style={{
-            padding: "10px 18px",
-            borderRadius: "8px",
-            border: "none",
-            backgroundColor: isRecording ? "#9ca3af" : "#22c55e",
-            color: "white",
-            fontWeight: 600,
-            cursor: isRecording ? "not-allowed" : "pointer",
-          }}
-        >
-          {isRecording ? "🎙️ Recording..." : "▶️ Start Recording"}
-        </button>
-
-        <button
-          type="button"
-          onClick={handleCreateCheckpoint}
-          disabled={!isRecording}
-          style={{
-            padding: "10px 18px",
-            borderRadius: "8px",
-            border: "none",
-            backgroundColor: !isRecording ? "#9ca3af" : "#8b5cf6",
-            color: "white",
-            fontWeight: 600,
-            cursor: !isRecording ? "not-allowed" : "pointer",
-          }}
-        >
-          📍 Create Checkpoint
-        </button>
-
-        <button
-          type="button"
-          onClick={handleStop}
-          disabled={!isRecording}
-          style={{
-            padding: "10px 18px",
-            borderRadius: "8px",
-            border: "none",
-            backgroundColor: !isRecording ? "#9ca3af" : "#ef4444",
-            color: "white",
-            fontWeight: 600,
-            cursor: !isRecording ? "not-allowed" : "pointer",
-          }}
-        >
-          ⏹️ Stop
-        </button>
+        </Btn>
+        <Btn onClick={handleStart} disabled={isRecording} color="green">
+          {isRecording ? "Recording..." : "Start Recording"}
+        </Btn>
+        <Btn onClick={handleStop} disabled={!isRecording} color="red">
+          Stop
+        </Btn>
       </div>
 
-      <div
-        style={{ fontSize: "0.9rem", marginBottom: "8px", color: "#64748b" }}
-      >
-        State: <strong style={{ color: "#1e293b" }}>{state}</strong>
-      </div>
-
-      {isRecording && (
-        <div
-          style={{ fontSize: "0.9rem", marginBottom: "8px", color: "#64748b" }}
+      {/* ── Requested Config (reference) ── */}
+      <details style={{ marginBottom: "16px" }}>
+        <summary
+          style={{ cursor: "pointer", fontWeight: 600, color: "#475569" }}
         >
-          Duration:{" "}
-          <strong style={{ color: "#1e293b" }}>
-            {formatDuration(duration)}
-          </strong>
-        </div>
-      )}
+          Requested Config
+        </summary>
+        <pre style={mono}>{JSON.stringify(REQUESTED_CONFIG, null, 2)}</pre>
+      </details>
 
+      {/* ── Live Checkpoints ── */}
       {checkpoints.length > 0 && (
-        <div style={{ marginTop: "16px" }}>
-          <h3
-            style={{
-              fontSize: "1.1rem",
-              marginBottom: "12px",
-              color: "#1e293b",
-            }}
-          >
-            Checkpoints ({checkpoints.length}):
+        <div style={{ marginBottom: "16px" }}>
+          <h3 style={{ fontSize: "1.1rem", marginBottom: "12px" }}>
+            Checkpoints ({checkpoints.length})
           </h3>
           <div
             style={{ display: "flex", flexDirection: "column", gap: "12px" }}
           >
-            {checkpoints.map((checkpoint) => (
-              <div
-                key={checkpoint.id}
-                style={{
-                  padding: "12px",
-                  borderRadius: "8px",
-                  backgroundColor: "rgba(139,92,246,0.1)",
-                  border: "1px solid rgba(139,92,246,0.3)",
-                }}
-              >
-                <div style={{ fontSize: "0.85rem", marginBottom: "8px" }}>
-                  <strong>Checkpoint #{checkpoint.index}</strong>
-                  <div style={{ marginTop: "4px", color: "#64748b" }}>
-                    Segment: {formatDuration(checkpoint.segmentDuration)} |
-                    Total: {formatDuration(checkpoint.duration)} | Size:{" "}
-                    {(checkpoint.size / 1024).toFixed(2)} KB
-                  </div>
-                </div>
-                <CheckpointPlayer checkpoint={checkpoint} />
-              </div>
+            {checkpoints.map((cp) => (
+              <CheckpointCard
+                key={cp.id}
+                checkpoint={cp}
+                requestedConfig={REQUESTED_CONFIG.audioConfig}
+              />
             ))}
           </div>
         </div>
       )}
 
+      {/* ── Final Recording Result ── */}
       {recording && (
         <div
           style={{
             marginTop: "16px",
             padding: "16px",
-            borderRadius: "8px",
-            backgroundColor: "rgba(34,197,94,0.1)",
+            borderRadius: "12px",
+            backgroundColor: "rgba(34,197,94,0.08)",
             border: "1px solid rgba(34,197,94,0.3)",
           }}
         >
@@ -358,12 +279,22 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
               color: "#1e293b",
             }}
           >
-            Recording Complete
+            Final Recording Result
           </h3>
+
+          {/* Config comparison */}
+          <ConfigComparison
+            label="Final audioConfig"
+            actual={recording.audioConfig}
+            requested={REQUESTED_CONFIG.audioConfig}
+          />
+
+          {/* Metadata */}
           <div
             style={{
-              fontSize: "0.9rem",
-              marginBottom: "12px",
+              fontSize: "0.85rem",
+              marginTop: "10px",
+              marginBottom: "10px",
               color: "#64748b",
             }}
           >
@@ -371,34 +302,37 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
             <strong style={{ color: "#1e293b" }}>
               {formatDuration(recording.duration)}
             </strong>
-            <br />
-            Checkpoints:{" "}
-            <strong style={{ color: "#1e293b" }}>
-              {recording.checkpointCount || 0}
-            </strong>
-            <br />
-            Size:{" "}
+            &nbsp;|&nbsp; Size:{" "}
             <strong style={{ color: "#1e293b" }}>
               {(recording.size / 1024).toFixed(2)} KB
             </strong>
+            &nbsp;|&nbsp; Checkpoints:{" "}
+            <strong style={{ color: "#1e293b" }}>
+              {recording.checkpointCount || 0}
+            </strong>
           </div>
+
+          {/* Raw JSON */}
+          <details>
+            <summary
+              style={{ cursor: "pointer", fontWeight: 600, color: "#475569" }}
+            >
+              Raw Response JSON
+            </summary>
+            <pre style={mono}>
+              {JSON.stringify(
+                { ...recording, audioData: `[${recording.audioData.length} chars]` },
+                null,
+                2
+              )}
+            </pre>
+          </details>
+
+          {/* Audio player */}
           {recording.audioData && (
-            <div>
-              <p
-                style={{
-                  fontSize: "0.85rem",
-                  color: "#64748b",
-                  marginBottom: "8px",
-                }}
-              >
-                {recording.checkpoints && recording.checkpoints.length > 0 ? (
-                  <>
-                    Complete Recording (all {recording.checkpointCount + 1}{" "}
-                    segments merged):
-                  </>
-                ) : (
-                  <>Complete Recording:</>
-                )}
+            <div style={{ marginTop: "12px" }}>
+              <p style={{ ...label, marginBottom: "6px" }}>
+                Complete Recording:
               </p>
               <audio
                 controls
@@ -413,15 +347,157 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
   );
 }
 
-// Component for playing checkpoint audio
-function CheckpointPlayer({ checkpoint }: { checkpoint: Checkpoint }) {
-  const audioUrl = `data:audio/wav;base64,${checkpoint.audioData}`;
+// ── Sub-components ────────────────────────────────────────────────────────────
+
+function CheckpointCard({
+  checkpoint,
+  requestedConfig,
+}: {
+  checkpoint: Checkpoint;
+  requestedConfig: typeof REQUESTED_CONFIG.audioConfig;
+}) {
+  return (
+    <div
+      style={{
+        padding: "12px",
+        borderRadius: "8px",
+        backgroundColor: "rgba(139,92,246,0.08)",
+        border: "1px solid rgba(139,92,246,0.25)",
+      }}
+    >
+      <div style={{ fontSize: "0.85rem", marginBottom: "6px" }}>
+        <strong>Checkpoint #{checkpoint.index}</strong>
+      </div>
+
+      {/* Config match badges */}
+      <ConfigComparison
+        label={`CP #${checkpoint.index} audioConfig`}
+        actual={checkpoint.audioConfig}
+        requested={requestedConfig}
+      />
+
+      {/* Stats */}
+      <div
+        style={{
+          marginTop: "6px",
+          fontSize: "0.8rem",
+          color: "#64748b",
+        }}
+      >
+        Segment: {formatDuration(checkpoint.segmentDuration)} &nbsp;|&nbsp;
+        Elapsed: {formatDuration(checkpoint.duration)} &nbsp;|&nbsp; Size:{" "}
+        {(checkpoint.size / 1024).toFixed(2)} KB
+      </div>
+
+      {/* Raw JSON */}
+      <details style={{ marginTop: "6px" }}>
+        <summary style={{ cursor: "pointer", fontSize: "0.78rem", color: "#64748b" }}>
+          Raw JSON
+        </summary>
+        <pre style={{ ...mono, fontSize: "0.72rem" }}>
+          {JSON.stringify(
+            { ...checkpoint, audioData: `[${checkpoint.audioData.length} chars]` },
+            null,
+            2
+          )}
+        </pre>
+      </details>
+
+      {/* Audio player */}
+      <audio
+        controls
+        src={`data:audio/wav;base64,${checkpoint.audioData}`}
+        style={{ width: "100%", maxWidth: "400px", marginTop: "8px" }}
+      />
+    </div>
+  );
+}
+
+/**
+ * Shows each audioConfig field side-by-side with a match/mismatch badge.
+ */
+function ConfigComparison({
+  label: sectionLabel,
+  actual,
+  requested,
+}: {
+  label: string;
+  actual: { format?: string; sampleRate?: number; bitDepth?: number; channels?: number };
+  requested: { format: string; sampleRate: number; bitDepth: number; channels: number };
+}) {
+  const fields: { key: string; req: string | number; act: string | number | undefined }[] = [
+    { key: "format", req: requested.format, act: actual.format },
+    { key: "sampleRate", req: requested.sampleRate, act: actual.sampleRate },
+    { key: "bitDepth", req: requested.bitDepth, act: actual.bitDepth },
+    { key: "channels", req: requested.channels, act: actual.channels },
+  ];
 
   return (
-    <audio
-      controls
-      src={audioUrl}
-      style={{ width: "100%", maxWidth: "400px" }}
-    />
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "6px",
+        alignItems: "center",
+        fontSize: "0.8rem",
+      }}
+    >
+      <span style={{ ...label, marginRight: "4px" }}>{sectionLabel}:</span>
+      {fields.map((f) => {
+        const match = String(f.act) === String(f.req);
+        return (
+          <span key={f.key}>
+            <span style={{ color: "#334155" }}>{f.key}=</span>
+            <strong style={{ color: match ? "#15803d" : "#b91c1c" }}>
+              {String(f.act ?? "?")}
+            </strong>
+            <span style={configBadge(match)}>
+              {match ? "OK" : `expected ${f.req}`}
+            </span>
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+function Btn({
+  onClick,
+  disabled,
+  color,
+  children,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  color: "blue" | "green" | "red";
+  children: React.ReactNode;
+}) {
+  const colors: Record<string, { bg: string; border: string; text: string }> = {
+    blue: {
+      bg: "rgba(59,130,246,0.1)",
+      border: "1px solid rgba(59,130,246,0.3)",
+      text: "#1e40af",
+    },
+    green: { bg: "#22c55e", border: "none", text: "white" },
+    red: { bg: "#ef4444", border: "none", text: "white" },
+  };
+  const c = colors[color];
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        padding: "10px 18px",
+        borderRadius: "8px",
+        border: disabled ? "none" : c.border,
+        backgroundColor: disabled ? "#9ca3af" : c.bg,
+        color: disabled ? "white" : c.text,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+      }}
+    >
+      {children}
+    </button>
   );
 }
