@@ -51,7 +51,10 @@ export function SpeechToTextExample() {
   const [stopMode, setStopMode] = useState<StopMode>("autoOnSilence");
   const [partialResults, setPartialResults] = useState(true);
   const [continuous, setContinuous] = useState(false);
+  const [punctuation, setPunctuation] = useState(false);
+  const [popup, setPopup] = useState(false);
   const [maxDuration, setMaxDuration] = useState(30000);
+  const [maxAlternatives, setMaxAlternatives] = useState(3);
 
   const isListening =
     state === RecognitionState.LISTENING ||
@@ -92,9 +95,10 @@ export function SpeechToTextExample() {
     partialResults,
     stopMode,
     continuous,
+    punctuation,
+    popup,
     maxDuration,
-    popup: false,
-    maxAlternatives: 3,
+    maxAlternatives,
   });
 
   const handleStart = async () => {
@@ -255,6 +259,42 @@ export function SpeechToTextExample() {
             min={1000}
             step={1000}
           />
+        </div>
+
+        {/* Max alternatives */}
+        <div>
+          <div style={label}>Max Alternatives</div>
+          <input
+            type="number"
+            value={maxAlternatives}
+            onChange={(e) => setMaxAlternatives(Number(e.target.value))}
+            disabled={isListening}
+            style={{ width: "100%", padding: "6px", borderRadius: "6px" }}
+            min={1}
+            max={10}
+          />
+        </div>
+
+        {/* Punctuation */}
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <input
+            type="checkbox"
+            checked={punctuation}
+            onChange={(e) => setPunctuation(e.target.checked)}
+            disabled={isListening}
+          />
+          <span style={label}>Auto Punctuation (Android)</span>
+        </div>
+
+        {/* Popup */}
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <input
+            type="checkbox"
+            checked={popup}
+            onChange={(e) => setPopup(e.target.checked)}
+            disabled={isListening}
+          />
+          <span style={label}>Native OS Popup</span>
         </div>
       </div>
 
