@@ -51,7 +51,6 @@ export function SpeechToTextExample() {
   const [stopMode, setStopMode] = useState<StopMode>("autoOnSilence");
   const [partialResults, setPartialResults] = useState(true);
   const [continuous, setContinuous] = useState(false);
-  const [punctuation, setPunctuation] = useState(false);
   const [popup, setPopup] = useState(false);
   const [maxDuration, setMaxDuration] = useState(30000);
   const [maxAlternatives, setMaxAlternatives] = useState(3);
@@ -95,7 +94,6 @@ export function SpeechToTextExample() {
     partialResults,
     stopMode,
     continuous,
-    punctuation,
     popup,
     maxDuration,
     maxAlternatives,
@@ -273,17 +271,6 @@ export function SpeechToTextExample() {
             min={1}
             max={10}
           />
-        </div>
-
-        {/* Punctuation */}
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <input
-            type="checkbox"
-            checked={punctuation}
-            onChange={(e) => setPunctuation(e.target.checked)}
-            disabled={isListening}
-          />
-          <span style={label}>Auto Punctuation (Android)</span>
         </div>
 
         {/* Popup */}
