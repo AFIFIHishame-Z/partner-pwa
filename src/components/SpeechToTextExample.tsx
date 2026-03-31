@@ -47,7 +47,7 @@ export function SpeechToTextExample() {
   const [supportedLanguages, setSupportedLanguages] = useState<string[]>([]);
 
   // ── Config form state ──────────────────────────────────────────────
-  const [selectedLanguage, setSelectedLanguage] = useState(Language.AR_MA);
+  const [selectedLanguage, setSelectedLanguage] = useState<string>(Language.AR_MA);
   const [stopMode, setStopMode] = useState<StopMode>("autoOnSilence");
   const [partialResults, setPartialResults] = useState(true);
   const [continuous, setContinuous] = useState(false);
