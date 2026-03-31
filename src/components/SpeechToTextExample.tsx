@@ -3,435 +3,364 @@ import {
   SpeechToText,
   RecognitionState,
   Language,
+  type RecognitionResult,
+  type SpeechRecognitionConfig,
+  type StopMode,
 } from "@superapp_men/speech-to-text";
 
+// ── Styles ────────────────────────────────────────────────────────────────
+const card: React.CSSProperties = {
+  padding: "24px",
+  marginTop: "20px",
+  borderRadius: "16px",
+  background:
+    "linear-gradient(135deg, rgba(59,130,246,0.1), rgba(16,185,129,0.1))",
+  border: "1px solid rgba(59,130,246,0.3)",
+};
+const mono: React.CSSProperties = {
+  fontFamily: "monospace",
+  fontSize: "0.78rem",
+  background: "rgba(0,0,0,0.05)",
+  padding: "10px 12px",
+  borderRadius: "8px",
+  overflowX: "auto",
+  whiteSpace: "pre-wrap",
+  wordBreak: "break-all",
+};
+const label: React.CSSProperties = { fontSize: "0.8rem", color: "#64748b" };
+
 export function SpeechToTextExample() {
-  // New instance after each stop so native mic works on 2nd, 4th… attempt (plugin doesn’t re-acquire otherwise).
+  // Fresh instance after each session so native mic re-acquires properly
   const [instanceKey, setInstanceKey] = useState(0);
   const speech = useMemo(
-    () =>
-      new SpeechToText({
-        timeout: 10000,
-        debug: true,
-      }),
-    [instanceKey],
+    () => new SpeechToText({ timeout: 10000, debug: true }),
+    [instanceKey]
   );
 
   const [state, setState] = useState<RecognitionState>(RecognitionState.IDLE);
-  const [isListening, setIsListening] = useState(false);
-
-  // Log every render
-  console.log(
-    "[superapp] [React] 🔄 Component rendering - state:",
-    state,
-    "isListening:",
-    isListening,
-  );
-  const [transcript, setTranscript] = useState<string>("");
-  const [partialTranscript, setPartialTranscript] = useState<string>("");
+  const [transcript, setTranscript] = useState("");
+  const [partialTranscript, setPartialTranscript] = useState("");
+  const [finalResult, setFinalResult] = useState<RecognitionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [available, setAvailable] = useState<boolean | null>(null);
-  const [permission, setPermission] = useState<string>("unknown");
+  const [permission, setPermission] = useState("unknown");
   const [supportedLanguages, setSupportedLanguages] = useState<string[]>([]);
-  const [selectedLanguage, setSelectedLanguage] = useState<string>(
-    Language.AR_MA,
-  );
-  const [lastResultWasEmpty, setLastResultWasEmpty] = useState(false);
 
+  // ── Config form state ──────────────────────────────────────────────
+  const [selectedLanguage, setSelectedLanguage] = useState(Language.AR_MA);
+  const [stopMode, setStopMode] = useState<StopMode>("autoOnSilence");
+  const [partialResults, setPartialResults] = useState(true);
+  const [continuous, setContinuous] = useState(false);
+  const [maxDuration, setMaxDuration] = useState(30000);
+
+  const isListening =
+    state === RecognitionState.LISTENING ||
+    state === RecognitionState.STARTING;
+
+  // ── Events ─────────────────────────────────────────────────────────
   useEffect(() => {
-    // Listen to state changes
-    const unsubState = speech.on("stateChange", ({ state }: any) => {
-      console.log("[superapp] [React] stateChange event received:", state);
-      console.log("[superapp] [React] About to call setState with:", state);
-      setState(state);
-      console.log("[superapp] [React] setState called");
-      setIsListening(state === RecognitionState.LISTENING);
-      console.log(
-        "[superapp] [React] setIsListening called with:",
-        state === RecognitionState.LISTENING,
-      );
-      console.log(
-        "[superapp] [React] State updated to:",
-        state,
-        "isListening:",
-        state === RecognitionState.LISTENING,
-      );
-    });
+    speech.isAvailable().then(setAvailable);
+    speech.checkPermission().then(setPermission);
+    speech.getSupportedLanguages().then(setSupportedLanguages);
 
-    // Listen to partial results
-    const unsubPartial = speech.on("partialResult", ({ result }: any) => {
-      console.log("[superapp] [React] partialResult event:", result.transcript);
-      setPartialTranscript(result.transcript);
-    });
-
-    // Listen to final results
-    const unsubResult = speech.on("result", ({ result }: any) => {
-      console.log("[superapp] [React] result event:", result.transcript);
-      setTranscript(result.transcript);
-      setPartialTranscript("");
-      setLastResultWasEmpty(!(result?.transcript?.trim?.() ?? ""));
-    });
-
-    // Listen to errors (SuperApp handles "didn't understand" / "no match" by auto-restarting)
-    const unsubError = speech.on("error", ({ message }: any) => {
-      console.log("[superapp] [React] error event:", message);
-      setError(message);
-    });
-
-    // Listen to listening started
-    const unsubStarted = speech.on("listeningStarted", () => {
-      console.log("[superapp] [React] listeningStarted event");
-    });
-
-    // Listen to listening stopped
-    const unsubStopped = speech.on("listeningStopped", ({ duration }: any) => {
-      console.log(
-        "[superapp] [React] listeningStopped event, duration:",
-        duration,
-      );
-      // New instance for next recording so native mic starts again on attempt 2, 4, 6…
-      setInstanceKey((k) => k + 1);
-    });
+    const unsubs = [
+      speech.on("stateChange", ({ state }: any) => setState(state)),
+      speech.on("partialResult", ({ result }: any) => {
+        setPartialTranscript(result.transcript);
+      }),
+      speech.on("result", ({ result }: any) => {
+        setTranscript(result.transcript);
+        setFinalResult(result);
+        setPartialTranscript("");
+      }),
+      speech.on("error", ({ message }: any) => setError(message)),
+      speech.on("listeningStopped", () => {
+        // bump instance for next session
+        setInstanceKey((k) => k + 1);
+      }),
+    ];
 
     return () => {
-      unsubState();
-      unsubPartial();
-      unsubResult();
-      unsubError();
-      unsubStarted();
-      unsubStopped();
+      unsubs.forEach((u) => u());
       speech.destroy();
     };
   }, [speech]);
 
-  // Check availability on mount
-  useEffect(() => {
-    const checkAvailability = async () => {
-      try {
-        const isAvailable = await speech.isAvailable();
-        setAvailable(isAvailable);
+  // ── Actions ────────────────────────────────────────────────────────
+  const buildConfig = (): SpeechRecognitionConfig => ({
+    language: selectedLanguage,
+    partialResults,
+    stopMode,
+    continuous,
+    maxDuration,
+    popup: false,
+    maxAlternatives: 3,
+  });
 
-        if (isAvailable) {
-          const languages = await speech.getSupportedLanguages();
-          setSupportedLanguages(languages);
-
-          const permStatus = await speech.checkPermission();
-          setPermission(permStatus);
-        }
-      } catch (err) {
-        console.error("Error checking availability:", err);
-        setAvailable(false);
-      }
-    };
-
-    checkAvailability();
-  }, [speech]);
-
-  const handleRequestPermission = async () => {
-    try {
-      setError(null);
-      const status = await speech.requestPermission();
-      setPermission(status);
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Échec de la demande d'autorisation",
-      );
-    }
-  };
-
-  const handleStartListening = async () => {
+  const handleStart = async () => {
     try {
       setError(null);
       setTranscript("");
       setPartialTranscript("");
-      setLastResultWasEmpty(false);
+      setFinalResult(null);
 
       if (permission !== "granted") {
-        const status = await speech.requestPermission();
-        setPermission(status);
-        if (status !== "granted") {
-          setError("L'autorisation du microphone est requise");
+        const p = await speech.requestPermission();
+        setPermission(p);
+        if (p !== "granted") {
+          setError("Microphone permission is required");
           return;
         }
       }
 
-      await speech.startListening({
-        language: selectedLanguage,
-        partialResults: false,
-        popup: false, // Partner app manages its own UI
-      });
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Échec du démarrage de l'écoute",
-      );
+      const config = buildConfig();
+      await speech.startListening(config);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to start");
     }
   };
 
-  const handleStopListening = async () => {
+  const handleStop = async () => {
     try {
-      setError(null);
-      await speech.stopListening();
-      // instanceKey is incremented in listeningStopped listener → new SpeechToText for next start
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Échec de l'arrêt de l'écoute",
-      );
-    }
-  };
-
-  const getStateColor = () => {
-    switch (state) {
-      case RecognitionState.LISTENING:
-        return "#4caf50";
-      case RecognitionState.ERROR:
-        return "#f44336";
-      case RecognitionState.STARTING:
-      case RecognitionState.PROCESSING:
-        return "#ff9800";
-      default:
-        return "#9e9e9e";
+      const result = await speech.stopListening();
+      if (result) {
+        setTranscript(result.transcript);
+        setFinalResult(result);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to stop");
     }
   };
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        maxWidth: "800px",
-        margin: "0 auto",
-        marginTop: "30px",
-        fontFamily: "system-ui, sans-serif",
-      }}
-    >
-      <h2 style={{ marginBottom: "20px", color: "#333" }}>
-        🎤 Reconnaissance vocale
-      </h2>
-
-      {/* Status Section */}
-      <div
+    <div style={card}>
+      <h2
         style={{
-          background: "#f5f5f5",
-          padding: "15px",
-          borderRadius: "8px",
-          marginBottom: "20px",
+          marginBottom: "16px",
+          fontSize: "1.75rem",
+          fontWeight: 700,
+          color: "#1e293b",
         }}
       >
-        <div style={{ marginBottom: "10px" }}>
-          <strong>État :</strong>{" "}
-          <span
-            style={{
-              padding: "4px 8px",
-              borderRadius: "4px",
-              background: getStateColor(),
-              color: "white",
-              fontSize: "12px",
-            }}
-          >
-            {state}
-          </span>
-        </div>
+        Speech-to-Text
+      </h2>
 
-        <div style={{ marginBottom: "10px" }}>
-          <strong>Disponible :</strong>{" "}
-          {available === null ? (
-            "Vérification..."
-          ) : available ? (
-            <span style={{ color: "#4caf50" }}>✅ Oui</span>
-          ) : (
-            <span style={{ color: "#f44336" }}>❌ Non</span>
-          )}
-        </div>
-
-        <div style={{ marginBottom: "10px" }}>
-          <strong>Autorisation :</strong>{" "}
-          <span
-            style={{
-              color:
-                permission === "granted"
-                  ? "#4caf50"
-                  : permission === "denied"
-                    ? "#f44336"
-                    : "#ff9800",
-            }}
-          >
-            {permission === "granted"
-              ? "Autorisé"
-              : permission === "denied"
-                ? "Refusé"
-                : permission === "prompt"
-                  ? "À demander"
-                  : permission}
-          </span>
-        </div>
-
-        {supportedLanguages.length > 0 && (
-          <div style={{ marginBottom: "10px" }}>
-            <strong>Langues prises en charge :</strong>{" "}
-            {supportedLanguages.join(", ")}
-          </div>
-        )}
-
-        {error && (
-          <div
-            style={{
-              padding: "10px",
-              background: "#ffebee",
-              color: "#c62828",
-              borderRadius: "4px",
-              marginTop: "10px",
-            }}
-          >
-            <strong>Erreur :</strong> {error}
-          </div>
-        )}
+      {/* ── Status line ── */}
+      <div style={{ fontSize: "0.9rem", marginBottom: "8px" }}>
+        Device:{" "}
+        <strong style={{ color: available ? "#22c55e" : "#ef4444" }}>
+          {available === null ? "..." : available ? "Available" : "N/A"}
+        </strong>{" "}
+        | Permission: <strong>{permission}</strong> | State:{" "}
+        <strong>{state}</strong>
       </div>
 
-      {/* Language Selection */}
-      {supportedLanguages.length > 0 && (
+      {error && (
         <div
           style={{
-            background: "#e3f2fd",
-            padding: "15px",
+            marginBottom: "12px",
+            padding: "12px",
             borderRadius: "8px",
-            marginBottom: "20px",
+            backgroundColor: "rgba(248,113,113,0.1)",
+            border: "1px solid rgba(248,113,113,0.4)",
+            color: "#b91c1c",
+            fontSize: "0.9rem",
           }}
         >
-          <label style={{ display: "block", marginBottom: "10px" }}>
-            <strong>Langue :</strong>
-            <select
-              value={selectedLanguage}
-              onChange={(e) => setSelectedLanguage(e.target.value)}
-              style={{
-                marginLeft: "10px",
-                padding: "5px 10px",
-                borderRadius: "4px",
-                border: "1px solid #ccc",
-              }}
-            >
-              {supportedLanguages.map((lang) => (
-                <option key={lang} value={lang}>
-                  {lang}
-                </option>
-              ))}
-            </select>
-          </label>
+          {error}
         </div>
       )}
 
-      {/* Transcript Display */}
+      {/* ── Config panel ── */}
       <div
         style={{
-          background: "#fff3e0",
-          padding: "15px",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: "10px",
+          marginBottom: "16px",
+          padding: "12px",
           borderRadius: "8px",
-          marginBottom: "20px",
-          minHeight: "100px",
+          background: "rgba(255,255,255,0.6)",
+          border: "1px solid rgba(0,0,0,0.08)",
         }}
       >
-        <strong>Transcription :</strong>
-        <div
-          style={{
-            marginTop: "10px",
-            padding: "10px",
-            background: "white",
-            borderRadius: "4px",
-            minHeight: "50px",
-            fontSize: "16px",
-            lineHeight: "1.5",
-          }}
-        >
-          {partialTranscript && (
-            <div style={{ color: "#666", fontStyle: "italic" }}>
-              {partialTranscript}...
-            </div>
-          )}
-          {transcript && (
-            <div
-              style={{
-                color: "#333",
-                marginTop: partialTranscript ? "10px" : "0",
-              }}
-            >
-              {transcript}
-            </div>
-          )}
-          {!partialTranscript && !transcript && !lastResultWasEmpty && (
-            <div style={{ color: "#999" }}>
-              Aucune transcription pour l'instant...
-            </div>
-          )}
-          {lastResultWasEmpty && (
-            <div
-              style={{
-                color: "#e65100",
-                fontWeight: 500,
-                marginTop: "8px",
-              }}
-            >
-              Aucune parole détectée. Veuillez réessayer.
-            </div>
-          )}
+        {/* Language */}
+        <div>
+          <div style={label}>Language</div>
+          <select
+            value={selectedLanguage}
+            onChange={(e) => setSelectedLanguage(e.target.value)}
+            disabled={isListening}
+            style={{ width: "100%", padding: "6px", borderRadius: "6px" }}
+          >
+            {supportedLanguages.length > 0
+              ? supportedLanguages.map((l) => (
+                  <option key={l} value={l}>
+                    {l}
+                  </option>
+                ))
+              : Object.values(Language).map((l) => (
+                  <option key={l} value={l}>
+                    {l}
+                  </option>
+                ))}
+          </select>
+        </div>
+
+        {/* Stop mode */}
+        <div>
+          <div style={label}>Stop Mode</div>
+          <select
+            value={stopMode}
+            onChange={(e) => setStopMode(e.target.value as StopMode)}
+            disabled={isListening}
+            style={{ width: "100%", padding: "6px", borderRadius: "6px" }}
+          >
+            <option value="autoOnSilence">Auto (stop on silence)</option>
+            <option value="manual">Manual (button to stop)</option>
+          </select>
+        </div>
+
+        {/* Partial results */}
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <input
+            type="checkbox"
+            checked={partialResults}
+            onChange={(e) => setPartialResults(e.target.checked)}
+            disabled={isListening}
+          />
+          <span style={label}>Partial Results (real-time)</span>
+        </div>
+
+        {/* Continuous */}
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <input
+            type="checkbox"
+            checked={continuous}
+            onChange={(e) => setContinuous(e.target.checked)}
+            disabled={isListening}
+          />
+          <span style={label}>Continuous (keep mic open)</span>
+        </div>
+
+        {/* Max duration */}
+        <div>
+          <div style={label}>Max Duration (ms)</div>
+          <input
+            type="number"
+            value={maxDuration}
+            onChange={(e) => setMaxDuration(Number(e.target.value))}
+            disabled={isListening}
+            style={{ width: "100%", padding: "6px", borderRadius: "6px" }}
+            min={1000}
+            step={1000}
+          />
         </div>
       </div>
 
-      {/* Controls */}
-      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
-        {permission !== "granted" && (
-          <button
-            onClick={handleRequestPermission}
-            style={{
-              padding: "10px 20px",
-              background: "#2196f3",
-              color: "white",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              fontSize: "14px",
-            }}
-          >
-            Demander l'autorisation
-          </button>
-        )}
+      {/* ── Requested config (reference) ── */}
+      <details style={{ marginBottom: "12px" }}>
+        <summary style={{ cursor: "pointer", fontWeight: 600, color: "#475569" }}>
+          Requested Config
+        </summary>
+        <pre style={mono}>{JSON.stringify(buildConfig(), null, 2)}</pre>
+      </details>
 
-        <button
-          onClick={handleStartListening}
-          disabled={!available || permission !== "granted" || isListening}
-          style={{
-            padding: "10px 20px",
-            background:
-              !available || permission !== "granted" || isListening
-                ? "#ccc"
-                : "#4caf50",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor:
-              !available || permission !== "granted" || isListening
-                ? "not-allowed"
-                : "pointer",
-            fontSize: "14px",
-          }}
-        >
-          🎤 Démarrer l'enregistrement
-        </button>
-        <button
-          onClick={handleStopListening}
-          disabled={!available || !isListening}
-          style={{
-            padding: "10px 20px",
-            background: !available || !isListening ? "#ccc" : "#f44336",
-            color: "white",
-            border: "none",
-            borderRadius: "4px",
-            cursor: !available || !isListening ? "not-allowed" : "pointer",
-            fontSize: "14px",
-          }}
-        >
-          ⏹ Arrêter l'enregistrement
-        </button>
+      {/* ── Buttons ── */}
+      <div style={{ display: "flex", gap: "12px", marginBottom: "16px", flexWrap: "wrap" }}>
+        <Btn onClick={handleStart} disabled={isListening} color="green">
+          {isListening ? "Listening..." : "Start Listening"}
+        </Btn>
+        <Btn onClick={handleStop} disabled={!isListening} color="red">
+          Stop
+        </Btn>
       </div>
+
+      {/* ── Live partial transcript ── */}
+      {partialTranscript && (
+        <div
+          style={{
+            padding: "12px",
+            borderRadius: "8px",
+            backgroundColor: "rgba(251,191,36,0.1)",
+            border: "1px solid rgba(251,191,36,0.3)",
+            marginBottom: "12px",
+          }}
+        >
+          <div style={{ ...label, marginBottom: "4px" }}>Partial (real-time):</div>
+          <div style={{ fontSize: "1rem", color: "#1e293b", fontWeight: 500 }}>
+            {partialTranscript}
+          </div>
+        </div>
+      )}
+
+      {/* ── Final transcript ── */}
+      {transcript && (
+        <div
+          style={{
+            padding: "12px",
+            borderRadius: "8px",
+            backgroundColor: "rgba(34,197,94,0.1)",
+            border: "1px solid rgba(34,197,94,0.3)",
+            marginBottom: "12px",
+          }}
+        >
+          <div style={{ ...label, marginBottom: "4px" }}>Final Transcript:</div>
+          <div
+            style={{ fontSize: "1.1rem", color: "#1e293b", fontWeight: 600 }}
+            dir="auto"
+          >
+            {transcript}
+          </div>
+        </div>
+      )}
+
+      {/* ── Full result JSON ── */}
+      {finalResult && (
+        <details style={{ marginBottom: "12px" }}>
+          <summary style={{ cursor: "pointer", fontWeight: 600, color: "#475569" }}>
+            Raw Result JSON
+          </summary>
+          <pre style={mono}>{JSON.stringify(finalResult, null, 2)}</pre>
+        </details>
+      )}
     </div>
+  );
+}
+
+// ── Btn ──────────────────────────────────────────────────────────────────
+function Btn({
+  onClick,
+  disabled,
+  color,
+  children,
+}: {
+  onClick: () => void;
+  disabled?: boolean;
+  color: "green" | "red";
+  children: React.ReactNode;
+}) {
+  const colors: Record<string, { bg: string; text: string }> = {
+    green: { bg: "#22c55e", text: "white" },
+    red: { bg: "#ef4444", text: "white" },
+  };
+  const c = colors[color];
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        padding: "10px 18px",
+        borderRadius: "8px",
+        border: "none",
+        backgroundColor: disabled ? "#9ca3af" : c.bg,
+        color: disabled ? "white" : c.text,
+        fontWeight: 600,
+        cursor: disabled ? "not-allowed" : "pointer",
+      }}
+    >
+      {children}
+    </button>
   );
 }
