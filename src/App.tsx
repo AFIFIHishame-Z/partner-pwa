@@ -29,7 +29,7 @@ function sendMessageToParent(navigationRequest: NavigationRequest): void {
 function requestNavigation(): void {
   const navigationRequest: NavigationRequest = {
     type: "NAVIGATION_REQUEST",
-    route: "/worldmap",
+    route: "/neighborhoods",
   };
   sendMessageToParent(navigationRequest);
 }
