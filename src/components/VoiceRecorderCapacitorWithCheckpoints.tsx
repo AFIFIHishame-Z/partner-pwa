@@ -14,7 +14,7 @@ import {
   type ErrorEvent,
 } from "@superapp_men/voice-recorder-capacitor";
 
-// ── Requested config (displayed in the UI so you can compare with responses) ──
+// ── Requested config.. (displayed in the UI so you can compare with responses) ──
 const REQUESTED_CONFIG = {
   isCheckpoints: true,
   useModelAi:true,
