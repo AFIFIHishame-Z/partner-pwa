@@ -7,6 +7,9 @@ import {
   AudioFormat,
   SampleRate,
   type RecordingResult,
+  type StateChangeEvent,
+  type ProgressEvent,
+  type ErrorEvent,
 } from "@superapp_men/voice-recorder-capacitor";
 
 function decodeBase64ToBlob(base64: string, mimeType = "audio/wav"): Blob {
@@ -17,6 +20,22 @@ function decodeBase64ToBlob(base64: string, mimeType = "audio/wav"): Blob {
   }
   return new Blob([byteArray], { type: mimeType });
 }
+
+const mono: React.CSSProperties = {
+  margin: 0,
+  fontSize: "0.8rem",
+  color: "#64748b",
+  whiteSpace: "pre-wrap",
+  wordBreak: "break-all",
+};
+
+const aiCard: React.CSSProperties = {
+  marginBottom: "12px",
+  padding: "12px",
+  borderRadius: "8px",
+  background: "rgba(14,165,233,0.08)",
+  border: "1px solid rgba(14,165,233,0.2)",
+};
 
 export function VoiceRecorderCapacitorSimple() {
   const [recorder] = useState(
@@ -42,7 +61,7 @@ export function VoiceRecorderCapacitorSimple() {
 console.log("test stateChange");
 
     // State changes
-    const unsubState = recorder.on("stateChange", ({ state }: any) => {
+    const unsubState = recorder.on<StateChangeEvent>("stateChange", ({ state }) => {
       setState(state);
       console.log("test stateChange 2");
 
@@ -50,13 +69,13 @@ console.log("test stateChange");
     });
 
     // Progress updates
-    const unsubProgress = recorder.on("progress", ({ duration }: any) => {
+    const unsubProgress = recorder.on<ProgressEvent>("progress", ({ duration }) => {
       setDuration(duration);
       console.log("progress : " + JSON.stringify(duration));
     });
 
     // Error handling
-    const unsubError = recorder.on("error", ({ message }: any) => {
+    const unsubError = recorder.on<ErrorEvent>("error", ({ message }) => {
       setError(message);
     });
 
@@ -104,6 +123,7 @@ console.log("test stateChange");
 
       await recorder.startRecording({
         isCheckpoints: false, // Disable checkpoint mode - simple recording
+        useModelAi: true,
         maxDuration: 60_000, // 1 minute
         audioConfig: {
           format: AudioFormat.WAV,
@@ -300,6 +320,11 @@ console.log("test stateChange");
           >
             Enregistrement terminé
           </h3>
+          <AiResultPanel
+            title="Résultat IA final"
+            result={recording.modelAiResult}
+            emptyLabel="Aucun résultat IA n'a été retourné pour cet enregistrement."
+          />
           <div
             style={{
               fontSize: "0.85rem",
@@ -524,4 +549,129 @@ console.log("test stateChange");
       )}
     </div>
   );
+}
+
+function AiResultPanel({
+  title,
+  result,
+  emptyLabel,
+}: {
+  title: string;
+  result: unknown;
+  emptyLabel: string;
+}) {
+  const highlights = extractAiHighlights(result);
+  const prettyJson = stringifyAiResult(result);
+  const hasResult = result !== undefined && result !== null;
+
+  return (
+    <div style={aiCard}>
+      <div
+        style={{
+          fontSize: "0.95rem",
+          fontWeight: 700,
+          color: "#0f172a",
+          marginBottom: "8px",
+        }}
+      >
+        {title}
+      </div>
+
+      {highlights.length > 0 ? (
+        <div style={{ display: "grid", gap: "8px" }}>
+          {highlights.map((highlight, index) => (
+            <div
+              key={`${title}-${index}`}
+              style={{
+                padding: "10px 12px",
+                borderRadius: "8px",
+                background: "rgba(255,255,255,0.72)",
+                color: "#0f172a",
+                lineHeight: 1.5,
+              }}
+            >
+              {highlight}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ color: "#475569", fontSize: "0.85rem" }}>
+          {hasResult ? "Réponse IA reçue, mais aucun texte lisible n'a été détecté." : emptyLabel}
+        </div>
+      )}
+
+      {hasResult && (
+        <details style={{ marginTop: "10px" }}>
+          <summary style={{ cursor: "pointer", fontSize: "0.8rem", color: "#0369a1" }}>
+            Payload IA brut
+          </summary>
+          <pre style={{ ...mono, marginTop: "8px" }}>{prettyJson}</pre>
+        </details>
+      )}
+    </div>
+  );
+}
+
+const AI_TEXT_KEYS = [
+  "text",
+  "result",
+  "response",
+  "transcript",
+  "summary",
+  "message",
+  "content",
+  "output",
+  "answer",
+];
+
+function extractAiHighlights(value: unknown, depth = 0): string[] {
+  if (depth > 4 || value == null) {
+    return [];
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed ? [trimmed] : [];
+  }
+
+  if (typeof value === "number" || typeof value === "boolean") {
+    return [String(value)];
+  }
+
+  if (Array.isArray(value)) {
+    return dedupeStrings(value.flatMap((item) => extractAiHighlights(item, depth + 1)));
+  }
+
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    const preferred = AI_TEXT_KEYS.flatMap((key) =>
+      key in record ? extractAiHighlights(record[key], depth + 1) : []
+    );
+
+    if (preferred.length > 0) {
+      return dedupeStrings(preferred);
+    }
+
+    return dedupeStrings(
+      Object.values(record).flatMap((entry) => extractAiHighlights(entry, depth + 1))
+    );
+  }
+
+  return [];
+}
+
+function dedupeStrings(values: string[]): string[] {
+  return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+}
+
+function stringifyAiResult(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
 }

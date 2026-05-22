@@ -8,11 +8,16 @@ import {
   type RecordingResult,
   type Checkpoint,
   type PermissionStatus,
+  type StateChangeEvent,
+  type ProgressEvent,
+  type CheckpointCreatedEvent,
+  type ErrorEvent,
 } from "@superapp_men/voice-recorder-capacitor";
 
 // ── Requested config (displayed in the UI so you can compare with responses) ──
 const REQUESTED_CONFIG = {
   isCheckpoints: true,
+  useModelAi:true,
   checkpointInterval: 1000,
   maxDuration: 120_000,
   audioConfig: {
@@ -46,6 +51,13 @@ const mono: React.CSSProperties = {
   whiteSpace: "pre-wrap",
   wordBreak: "break-all",
 };
+const aiCard: React.CSSProperties = {
+  marginTop: "12px",
+  padding: "12px",
+  borderRadius: "10px",
+  background: "rgba(14,165,233,0.08)",
+  border: "1px solid rgba(14,165,233,0.2)",
+};
 const configBadge = (match: boolean): React.CSSProperties => ({
   display: "inline-block",
   padding: "2px 8px",
@@ -77,19 +89,19 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
   useEffect(() => {
     recorder.isAvailable().then(setAvailable);
 
-    const unsubState = recorder.on("stateChange", ({ state }: any) =>
+    const unsubState = recorder.on<StateChangeEvent>("stateChange", ({ state }) =>
       setState(state)
     );
-    const unsubProgress = recorder.on("progress", ({ duration }: any) =>
+    const unsubProgress = recorder.on<ProgressEvent>("progress", ({ duration }) =>
       setDuration(duration)
     );
-    const unsubCheckpoint = recorder.on(
+    const unsubCheckpoint = recorder.on<CheckpointCreatedEvent>(
       "checkpointCreated",
-      ({ checkpoint }: any) => {
+      ({ checkpoint }) => {
         setCheckpoints((prev) => [...prev, checkpoint]);
       }
     );
-    const unsubError = recorder.on("error", ({ message }: any) =>
+    const unsubError = recorder.on<ErrorEvent>("error", ({ message }) =>
       setError(message)
     );
 
@@ -312,6 +324,12 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
             </strong>
           </div>
 
+          <AiResultPanel
+            title="Final AI Result"
+            result={recording.modelAiResult}
+            emptyLabel="No AI result returned for the full recording."
+          />
+
           {/* Raw JSON */}
           <details>
             <summary
@@ -389,6 +407,12 @@ function CheckpointCard({
         {(checkpoint.size / 1024).toFixed(2)} KB
       </div>
 
+      <AiResultPanel
+        title={`Checkpoint #${checkpoint.index} AI Result`}
+        result={checkpoint.modelAiResult}
+        emptyLabel="No AI result returned for this checkpoint."
+      />
+
       {/* Raw JSON */}
       <details style={{ marginTop: "6px" }}>
         <summary style={{ cursor: "pointer", fontSize: "0.78rem", color: "#64748b" }}>
@@ -411,6 +435,133 @@ function CheckpointCard({
       />
     </div>
   );
+}
+
+function AiResultPanel({
+  title,
+  result,
+  emptyLabel,
+}: {
+  title: string;
+  result: unknown;
+  emptyLabel: string;
+}) {
+  const highlights = extractAiHighlights(result);
+  const prettyJson = stringifyAiResult(result);
+  const hasResult = result !== undefined && result !== null;
+
+  return (
+    <div style={aiCard}>
+      <div
+        style={{
+          fontSize: "0.9rem",
+          fontWeight: 700,
+          color: "#0f172a",
+          marginBottom: "8px",
+        }}
+      >
+        {title}
+      </div>
+
+      {highlights.length > 0 ? (
+        <div style={{ display: "grid", gap: "8px" }}>
+          {highlights.map((highlight, index) => (
+            <div
+              key={`${title}-${index}`}
+              style={{
+                padding: "10px 12px",
+                borderRadius: "8px",
+                background: "rgba(255,255,255,0.72)",
+                color: "#0f172a",
+                lineHeight: 1.5,
+              }}
+            >
+              {highlight}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div style={{ color: "#475569", fontSize: "0.85rem" }}>
+          {hasResult ? "AI response received, but no readable text was detected." : emptyLabel}
+        </div>
+      )}
+
+      {hasResult && (
+        <details style={{ marginTop: "10px" }}>
+          <summary style={{ cursor: "pointer", fontSize: "0.8rem", color: "#0369a1" }}>
+            Raw AI payload
+          </summary>
+          <pre style={{ ...mono, marginTop: "8px", fontSize: "0.72rem" }}>
+            {prettyJson}
+          </pre>
+        </details>
+      )}
+    </div>
+  );
+}
+
+const AI_TEXT_KEYS = [
+  "text",
+  "result",
+  "response",
+  "transcript",
+  "summary",
+  "message",
+  "content",
+  "output",
+  "answer",
+];
+
+function extractAiHighlights(value: unknown, depth = 0): string[] {
+  if (depth > 4 || value == null) {
+    return [];
+  }
+
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed ? [trimmed] : [];
+  }
+
+  if (typeof value === "number" || typeof value === "boolean") {
+    return [String(value)];
+  }
+
+  if (Array.isArray(value)) {
+    return dedupeStrings(value.flatMap((item) => extractAiHighlights(item, depth + 1)));
+  }
+
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+
+    const preferred = AI_TEXT_KEYS.flatMap((key) =>
+      key in record ? extractAiHighlights(record[key], depth + 1) : []
+    );
+    if (preferred.length > 0) {
+      return dedupeStrings(preferred);
+    }
+
+    return dedupeStrings(
+      Object.values(record).flatMap((entry) => extractAiHighlights(entry, depth + 1))
+    );
+  }
+
+  return [];
+}
+
+function dedupeStrings(values: string[]): string[] {
+  return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+}
+
+function stringifyAiResult(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  try {
+    return JSON.stringify(value, null, 2);
+  } catch {
+    return String(value);
+  }
 }
 
 /**
