@@ -37,6 +37,8 @@ const aiCard: React.CSSProperties = {
   border: "1px solid rgba(14,165,233,0.2)",
 };
 
+type RecordingLanguage = "fr" | "ar";
+
 export function VoiceRecorderCapacitorSimple() {
   const [recorder] = useState(
     () =>
@@ -54,6 +56,8 @@ export function VoiceRecorderCapacitorSimple() {
   const [available, setAvailable] = useState<boolean | null>(null);
   const [showFullResponse, setShowFullResponse] = useState(false);
   const [decodedBlobUrl, setDecodedBlobUrl] = useState<string | null>(null);
+  const [selectedLanguage, setSelectedLanguage] =
+    useState<RecordingLanguage>("fr");
 
   useEffect(() => {
     // Check availability on mount
@@ -124,6 +128,7 @@ console.log("test stateChange");
       await recorder.startRecording({
         isCheckpoints: false, // Disable checkpoint mode - simple recording
         useModelAi: true,
+        lang: selectedLanguage,
         maxDuration: 60_000, // 1 minute
         audioConfig: {
           format: AudioFormat.WAV,
@@ -131,7 +136,7 @@ console.log("test stateChange");
           bitDepth: 16,
           channels: 1, // Mono
         },
-      });
+      } as any);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Échec du démarrage de l'enregistrement");
     }
@@ -192,6 +197,37 @@ console.log("test stateChange");
       <div style={{ fontSize: "0.9rem", marginBottom: "12px" }}>
         Autorisation : <strong>{permission === "granted" ? "Autorisé" : permission === "denied" ? "Refusé" : permission === "prompt" ? "À demander" : permission}</strong>
       </div>
+
+      <label
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "8px",
+          fontSize: "0.9rem",
+          marginBottom: "12px",
+          color: "#475569",
+        }}
+      >
+        Langue IA :
+        <select
+          value={selectedLanguage}
+          disabled={isRecording}
+          onChange={(event) =>
+            setSelectedLanguage(event.target.value as RecordingLanguage)
+          }
+          style={{
+            padding: "8px 10px",
+            borderRadius: "8px",
+            border: "1px solid rgba(59,130,246,0.3)",
+            backgroundColor: "white",
+            color: "#1e293b",
+            fontWeight: 600,
+          }}
+        >
+          <option value="fr">Français (fr)</option>
+          <option value="ar">Arabe (ar)</option>
+        </select>
+      </label>
 
       {error && (
         <div

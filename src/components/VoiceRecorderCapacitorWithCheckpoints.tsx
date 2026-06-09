@@ -69,6 +69,8 @@ const configBadge = (match: boolean): React.CSSProperties => ({
   color: match ? "#15803d" : "#b91c1c",
 });
 
+type RecordingLanguage = "fr" | "ar";
+
 export function VoiceRecorderCapacitorWithCheckpoints() {
   const [recorder] = useState(
     () =>
@@ -85,6 +87,8 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [available, setAvailable] = useState<boolean | null>(null);
+  const [selectedLanguage, setSelectedLanguage] =
+    useState<RecordingLanguage>("fr");
 
   useEffect(() => {
     recorder.isAvailable().then(setAvailable);
@@ -115,6 +119,10 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
   }, [recorder]);
 
   const isRecording = state === RecorderState.RECORDING;
+  const requestedConfigWithLanguage = {
+    ...REQUESTED_CONFIG,
+    lang: selectedLanguage,
+  };
 
   const handleCheckPermission = async () => {
     try {
@@ -149,7 +157,7 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
         }
       }
 
-      await recorder.startRecording(REQUESTED_CONFIG);
+      await recorder.startRecording(requestedConfigWithLanguage as any);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to start recording");
     }
@@ -194,6 +202,36 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
         Permission: <strong>{permission}</strong> &nbsp;|&nbsp; State:{" "}
         <strong>{state}</strong>
       </div>
+      <label
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          gap: "8px",
+          fontSize: "0.9rem",
+          marginBottom: "8px",
+          color: "#475569",
+        }}
+      >
+        AI language:
+        <select
+          value={selectedLanguage}
+          disabled={isRecording}
+          onChange={(event) =>
+            setSelectedLanguage(event.target.value as RecordingLanguage)
+          }
+          style={{
+            padding: "8px 10px",
+            borderRadius: "8px",
+            border: "1px solid rgba(59,130,246,0.3)",
+            backgroundColor: "white",
+            color: "#1e293b",
+            fontWeight: 600,
+          }}
+        >
+          <option value="fr">French (fr)</option>
+          <option value="ar">Arabic (ar)</option>
+        </select>
+      </label>
       {isRecording && (
         <div style={{ fontSize: "0.9rem", marginBottom: "8px" }}>
           Duration:{" "}
@@ -250,7 +288,7 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
         >
           Requested Config
         </summary>
-        <pre style={mono}>{JSON.stringify(REQUESTED_CONFIG, null, 2)}</pre>
+        <pre style={mono}>{JSON.stringify(requestedConfigWithLanguage, null, 2)}</pre>
       </details>
 
       {/* ── Live Checkpoints ── */}
