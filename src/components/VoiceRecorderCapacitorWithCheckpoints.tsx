@@ -70,6 +70,7 @@ const configBadge = (match: boolean): React.CSSProperties => ({
 });
 
 type RecordingLanguage = "fr" | "ar";
+type Audio2PhonemeResult = NonNullable<RecordingResult["modelAiResult"]>;
 
 export function VoiceRecorderCapacitorWithCheckpoints() {
   const [recorder] = useState(
@@ -157,7 +158,7 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
         }
       }
 
-      await recorder.startRecording(requestedConfigWithLanguage as any);
+      await recorder.startRecording(requestedConfigWithLanguage);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to start recording");
     }
@@ -481,9 +482,100 @@ function AiResultPanel({
   emptyLabel,
 }: {
   title: string;
-  result: unknown;
+  result?: Audio2PhonemeResult;
   emptyLabel: string;
 }) {
+  if (result) {
+    const phonemes = result.timestamps ?? [];
+
+    return (
+      <div style={aiCard}>
+        <div
+          style={{
+            fontSize: "0.9rem",
+            fontWeight: 700,
+            color: "#0f172a",
+            marginBottom: "8px",
+          }}
+        >
+          {title}
+        </div>
+
+        <div
+          style={{
+            padding: "10px 12px",
+            borderRadius: "8px",
+            background: "rgba(255,255,255,0.72)",
+            color: "#0f172a",
+            lineHeight: 1.5,
+            marginBottom: "10px",
+          }}
+        >
+          <div style={{ fontSize: "0.75rem", color: "#64748b", marginBottom: "4px" }}>
+            Transcript
+          </div>
+          <strong>{result.transcript || "(empty)"}</strong>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+            gap: "8px",
+          }}
+        >
+          <AiMetric label="Confidence" value={formatConfidence(result.confidence)} />
+          <AiMetric label="Latency" value={formatMs(result.latencyMs)} />
+          <AiMetric label="Language" value={result.language} />
+          <AiMetric label="Model" value={result.modelVersion} />
+          <AiMetric label="Audio duration" value={formatMs(result.audio.durationMs)} />
+          <AiMetric label="Sample rate" value={`${result.audio.sampleRateHz} Hz`} />
+          <AiMetric label="Channels" value={String(result.audio.channels)} />
+          <AiMetric label="Encoding" value={result.audio.encoding} />
+        </div>
+
+        {phonemes.length > 0 && (
+          <details style={{ marginTop: "10px" }}>
+            <summary style={{ cursor: "pointer", fontSize: "0.8rem", color: "#0369a1" }}>
+              Phoneme timestamps ({phonemes.length})
+            </summary>
+            <div style={{ display: "grid", gap: "6px", marginTop: "8px", maxHeight: "220px", overflowY: "auto" }}>
+              {phonemes.map((item, index) => (
+                <div
+                  key={`${item.phoneme}-${item.startMs}-${index}`}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gap: "8px",
+                    padding: "8px",
+                    borderRadius: "6px",
+                    background: "rgba(255,255,255,0.65)",
+                    fontSize: "0.78rem",
+                  }}
+                >
+                  <strong>{item.phoneme}</strong>
+                  <span>
+                    {formatMs(item.startMs)} - {formatMs(item.endMs)}
+                  </span>
+                  <span>{formatConfidence(item.confidence)}</span>
+                </div>
+              ))}
+            </div>
+          </details>
+        )}
+
+        <details style={{ marginTop: "10px" }}>
+          <summary style={{ cursor: "pointer", fontSize: "0.8rem", color: "#0369a1" }}>
+            Raw AI payload
+          </summary>
+          <pre style={{ ...mono, marginTop: "8px", fontSize: "0.72rem" }}>
+            {JSON.stringify(result, null, 2)}
+          </pre>
+        </details>
+      </div>
+    );
+  }
+
   const highlights = extractAiHighlights(result);
   const prettyJson = stringifyAiResult(result);
   const hasResult = result !== undefined && result !== null;
@@ -600,6 +692,32 @@ function stringifyAiResult(value: unknown): string {
   } catch {
     return String(value);
   }
+}
+
+function AiMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div
+      style={{
+        padding: "8px 10px",
+        borderRadius: "8px",
+        background: "rgba(255,255,255,0.66)",
+      }}
+    >
+      <div style={{ fontSize: "0.72rem", color: "#64748b", marginBottom: "3px" }}>
+        {label}
+      </div>
+      <strong style={{ color: "#0f172a", fontSize: "0.84rem" }}>{value}</strong>
+    </div>
+  );
+}
+
+function formatConfidence(value: number): string {
+  const normalized = value <= 1 ? value * 100 : value;
+  return `${normalized.toFixed(1)}%`;
+}
+
+function formatMs(value: number): string {
+  return `${Math.round(value)} ms`;
 }
 
 /**
