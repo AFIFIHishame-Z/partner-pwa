@@ -37,7 +37,7 @@ function requestNavigation(): void {
 function App() {
   return (
     <>
-      {/* Back to Super App - top left */}
+      {/* Back to Super App - top left. */}
       <button
         type="button"
         onClick={requestNavigation}
