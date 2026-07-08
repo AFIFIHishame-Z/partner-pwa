@@ -90,6 +90,7 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
   const [available, setAvailable] = useState<boolean | null>(null);
   const [selectedLanguage, setSelectedLanguage] =
     useState<RecordingLanguage>("fr");
+  const [referenceText, setReferenceText] = useState("");
 
   useEffect(() => {
     recorder.isAvailable().then(setAvailable);
@@ -120,9 +121,13 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
   }, [recorder]);
 
   const isRecording = state === RecorderState.RECORDING;
+  const trimmedReferenceText = referenceText.trim();
   const requestedConfigWithLanguage = {
     ...REQUESTED_CONFIG,
     lang: selectedLanguage,
+    ...(selectedLanguage === "ar"
+      ? { referenceText: trimmedReferenceText }
+      : {}),
   };
 
   const handleCheckPermission = async () => {
@@ -148,6 +153,11 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
       setError(null);
       setRecording(null);
       setCheckpoints([]);
+
+      if (selectedLanguage === "ar" && !trimmedReferenceText) {
+        setError("Reference text is required for Arabic pronunciation.");
+        return;
+      }
 
       if (permission !== "granted") {
         const p = await recorder.requestPermission();
@@ -233,6 +243,36 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
           <option value="ar">Arabic (ar)</option>
         </select>
       </label>
+      {selectedLanguage === "ar" && (
+        <label
+          style={{
+            display: "grid",
+            gap: "8px",
+            fontSize: "0.9rem",
+            marginBottom: "12px",
+            color: "#475569",
+            maxWidth: "520px",
+          }}
+        >
+          Arabic reference text:
+          <textarea
+            dir="rtl"
+            rows={3}
+            disabled={isRecording}
+            value={referenceText}
+            onChange={(event) => setReferenceText(event.target.value)}
+            placeholder="اكتب النص العربي المتوقع هنا"
+            style={{
+              padding: "10px 12px",
+              borderRadius: "8px",
+              border: "1px solid rgba(59,130,246,0.3)",
+              backgroundColor: "white",
+              color: "#1e293b",
+              resize: "vertical",
+            }}
+          />
+        </label>
+      )}
       {isRecording && (
         <div style={{ fontSize: "0.9rem", marginBottom: "8px" }}>
           Duration:{" "}
@@ -485,7 +525,7 @@ function AiResultPanel({
   result?: Audio2PhonemeResult;
   emptyLabel: string;
 }) {
-  if (result) {
+  if (result && isFrenchAiResult(result)) {
     const phonemes = result.timestamps ?? [];
 
     return (
@@ -576,6 +616,84 @@ function AiResultPanel({
     );
   }
 
+  if (result && isArabicAiResult(result)) {
+    return (
+      <div style={aiCard}>
+        <div
+          style={{
+            fontSize: "0.9rem",
+            fontWeight: 700,
+            color: "#0f172a",
+            marginBottom: "8px",
+          }}
+        >
+          {title}
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+            gap: "8px",
+          }}
+        >
+          <AiMetric label="Accepted" value={result.accepted ? "Yes" : "No"} />
+          <AiMetric label="Label" value={result.label} />
+          <AiMetric label="Score" value={`${result.scorePercent.toFixed(1)}%`} />
+          <AiMetric label="Version" value={result.assessmentVersion} />
+        </div>
+
+        {result.words.length > 0 && (
+          <details open style={{ marginTop: "10px" }}>
+            <summary style={{ cursor: "pointer", fontSize: "0.8rem", color: "#0369a1" }}>
+              Arabic words ({result.words.length})
+            </summary>
+            <div style={{ display: "grid", gap: "6px", marginTop: "8px", maxHeight: "220px", overflowY: "auto" }}>
+              {result.words.map((word) => (
+                <div
+                  key={word.id}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr 1fr",
+                    gap: "8px",
+                    padding: "8px",
+                    borderRadius: "6px",
+                    background: "rgba(255,255,255,0.65)",
+                    fontSize: "0.78rem",
+                  }}
+                >
+                  <strong>{word.referenceWord}</strong>
+                  <span>{word.producedText || "(empty)"}</span>
+                  <span>{word.status}</span>
+                  {word.faults.length > 0 && (
+                    <span style={{ gridColumn: "1 / -1", color: "#b91c1c" }}>
+                      Faults: {word.faults.join(", ")}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </details>
+        )}
+
+        {result.faults.length > 0 && (
+          <div style={{ marginTop: "10px", color: "#b91c1c", fontSize: "0.82rem" }}>
+            Faults: {result.faults.join(", ")}
+          </div>
+        )}
+
+        <details style={{ marginTop: "10px" }}>
+          <summary style={{ cursor: "pointer", fontSize: "0.8rem", color: "#0369a1" }}>
+            Arabic debug / raw payload
+          </summary>
+          <pre style={{ ...mono, marginTop: "8px", fontSize: "0.72rem" }}>
+            {JSON.stringify(result, null, 2)}
+          </pre>
+        </details>
+      </div>
+    );
+  }
+
   const highlights = extractAiHighlights(result);
   const prettyJson = stringifyAiResult(result);
   const hasResult = result !== undefined && result !== null;
@@ -628,6 +746,18 @@ function AiResultPanel({
       )}
     </div>
   );
+}
+
+function isFrenchAiResult(
+  result: Audio2PhonemeResult
+): result is Extract<Audio2PhonemeResult, { transcript: string }> {
+  return "transcript" in result;
+}
+
+function isArabicAiResult(
+  result: Audio2PhonemeResult
+): result is Extract<Audio2PhonemeResult, { accepted: boolean }> {
+  return "accepted" in result;
 }
 
 const AI_TEXT_KEYS = [
