@@ -37,7 +37,7 @@ const aiCard: React.CSSProperties = {
   border: "1px solid rgba(14,165,233,0.2)",
 };
 
-type RecordingLanguage = "fr" | "ar";
+type RecordingLanguage = "fr" | "ar" | "math";
 type Audio2PhonemeResult = NonNullable<RecordingResult["modelAiResult"]>;
 
 export function VoiceRecorderCapacitorSimple() {
@@ -60,6 +60,7 @@ export function VoiceRecorderCapacitorSimple() {
   const [selectedLanguage, setSelectedLanguage] =
     useState<RecordingLanguage>("fr");
   const [referenceText, setReferenceText] = useState("");
+  const [expectedNumber, setExpectedNumber] = useState("12");
 
   useEffect(() => {
     // Check availability on mount
@@ -124,6 +125,12 @@ console.log("test stateChange");
         return;
       }
 
+      const normalizedExpectedNumber = normalizeExpectedNumber(expectedNumber);
+      if (selectedLanguage === "math" && normalizedExpectedNumber === null) {
+        setError("Le nombre attendu doit etre un entier entre 0 et 99.");
+        return;
+      }
+
       if (permission !== "granted") {
         const p = await recorder.requestPermission();
         setPermission(p);
@@ -139,6 +146,11 @@ console.log("test stateChange");
         lang: selectedLanguage,
         ...(selectedLanguage === "ar"
           ? { referenceText: trimmedReferenceText }
+          : selectedLanguage === "math" && normalizedExpectedNumber !== null
+            ? {
+                referenceText: String(normalizedExpectedNumber),
+                metadata: { expectedNumber: normalizedExpectedNumber },
+              }
           : {}),
         maxDuration: 60_000, // 1 minute
         audioConfig: {
@@ -237,6 +249,7 @@ console.log("test stateChange");
         >
           <option value="fr">Français (fr)</option>
           <option value="ar">Arabe (ar)</option>
+          <option value="math">Math numbers (math)</option>
         </select>
       </label>
 
@@ -266,6 +279,37 @@ console.log("test stateChange");
               backgroundColor: "white",
               color: "#1e293b",
               resize: "vertical",
+            }}
+          />
+        </label>
+      )}
+
+      {selectedLanguage === "math" && (
+        <label
+          style={{
+            display: "grid",
+            gap: "8px",
+            fontSize: "0.9rem",
+            marginBottom: "12px",
+            color: "#475569",
+            maxWidth: "260px",
+          }}
+        >
+          Nombre attendu (0-99) :
+          <input
+            type="number"
+            min={0}
+            max={99}
+            disabled={isRecording}
+            value={expectedNumber}
+            onChange={(event) => setExpectedNumber(event.target.value)}
+            placeholder="12"
+            style={{
+              padding: "10px 12px",
+              borderRadius: "8px",
+              border: "1px solid rgba(59,130,246,0.3)",
+              backgroundColor: "white",
+              color: "#1e293b",
             }}
           />
         </label>
@@ -807,6 +851,101 @@ function AiResultPanel({
     );
   }
 
+  if (result && isMathAiResult(result)) {
+    return (
+      <div style={aiCard}>
+        <div
+          style={{
+            fontSize: "0.95rem",
+            fontWeight: 700,
+            color: "#0f172a",
+            marginBottom: "8px",
+          }}
+        >
+          {title}
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+            gap: "8px",
+          }}
+        >
+          <AiMetric label="Expected" value={String(result.expected.number)} />
+          <AiMetric label="Expected score" value={formatScore(result.expected.score)} />
+          <AiMetric label="Expected rank" value={String(result.expected.rank)} />
+          <AiMetric label="Most likely" value={String(result.mostLikely?.number ?? "none")} />
+          <AiMetric label="Most likely score" value={formatScore(result.mostLikely?.score ?? 0)} />
+          <AiMetric label="Detected" value={result.hasDetection ? "Yes" : "No"} />
+        </div>
+
+        <div
+          style={{
+            marginTop: "10px",
+            padding: "10px 12px",
+            borderRadius: "8px",
+            background: result.expected.isMostLikely
+              ? "rgba(34,197,94,0.12)"
+              : "rgba(245,158,11,0.14)",
+            color: "#0f172a",
+            fontWeight: 700,
+          }}
+        >
+          {result.expected.isMostLikely
+            ? "Expected number is the best match."
+            : "Expected number is not the best match."}
+        </div>
+
+        {result.detectedTokens.length > 0 && (
+          <div style={{ marginTop: "10px" }}>
+            <div style={{ fontSize: "0.75rem", color: "#64748b", marginBottom: "4px" }}>
+              Detected SWS tokens
+            </div>
+            <pre style={mono}>{result.detectedTokens.join(" ")}</pre>
+          </div>
+        )}
+
+        {result.likelyNumbers.length > 0 && (
+          <details open style={{ marginTop: "10px" }}>
+            <summary style={{ cursor: "pointer", fontSize: "0.8rem", color: "#0369a1" }}>
+              Likely numbers ({result.likelyNumbers.length})
+            </summary>
+            <div style={{ display: "grid", gap: "6px", marginTop: "8px", maxHeight: "220px", overflowY: "auto" }}>
+              {result.likelyNumbers.map((candidate) => (
+                <div
+                  key={`${candidate.number}-${candidate.rank}-${candidate.score}`}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "80px 1fr 1fr",
+                    gap: "8px",
+                    padding: "8px",
+                    borderRadius: "6px",
+                    background: "rgba(255,255,255,0.65)",
+                    fontSize: "0.78rem",
+                  }}
+                >
+                  <strong>{candidate.number}</strong>
+                  <span>rank {candidate.rank}</span>
+                  <span>{formatScore(candidate.score)}</span>
+                </div>
+              ))}
+            </div>
+          </details>
+        )}
+
+        <details style={{ marginTop: "10px" }}>
+          <summary style={{ cursor: "pointer", fontSize: "0.8rem", color: "#0369a1" }}>
+            Math raw payload
+          </summary>
+          <pre style={{ ...mono, marginTop: "8px" }}>
+            {JSON.stringify(result, null, 2)}
+          </pre>
+        </details>
+      </div>
+    );
+  }
+
   const highlights = extractAiHighlights(result);
   const prettyJson = stringifyAiResult(result);
   const hasResult = result !== undefined && result !== null;
@@ -869,6 +1008,20 @@ function isArabicAiResult(
   result: Audio2PhonemeResult
 ): result is Extract<Audio2PhonemeResult, { accepted: boolean }> {
   return "accepted" in result;
+}
+
+function isMathAiResult(
+  result: Audio2PhonemeResult
+): result is Extract<Audio2PhonemeResult, { expected: unknown }> {
+  return "expected" in result && "likelyNumbers" in result;
+}
+
+function normalizeExpectedNumber(value: string): number | null {
+  const parsed = Number.parseInt(value.trim(), 10);
+  if (!Number.isInteger(parsed) || parsed < 0 || parsed > 99) {
+    return null;
+  }
+  return parsed;
 }
 
 const AI_TEXT_KEYS = [
@@ -955,6 +1108,10 @@ function AiMetric({ label, value }: { label: string; value: string }) {
 function formatConfidence(value: number): string {
   const normalized = value <= 1 ? value * 100 : value;
   return `${normalized.toFixed(1)}%`;
+}
+
+function formatScore(value: number): string {
+  return `${(value * 100).toFixed(1)}%`;
 }
 
 function formatMs(value: number): string {

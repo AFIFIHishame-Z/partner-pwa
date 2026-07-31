@@ -16,7 +16,7 @@
     "@superapp_men/submit-assessment-results": "^1.0.11",
     "@superapp_men/text-to-speech": "^1.0.1",
     "@superapp_men/token-provider": "^1.0.17",
-    "@superapp_men/voice-recorder-capacitor": "2.1.0",
+    "@superapp_men/voice-recorder-capacitor": "^2.2.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1"
   },
