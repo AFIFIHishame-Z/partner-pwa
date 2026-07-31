@@ -4,7 +4,9 @@ import react from "@vitejs/plugin-react";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: "/",
+  // "./" makes all asset paths relative to index.html —
+  // works both on Vercel ("/") and when served from a subfolder on-device.
+  base: "./",
   build: {
     // Optimize for PWA and Vercel deployment
     outDir: "dist",

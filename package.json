@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@superapp_men/content-provider": "^1.4.0",
+    "@superapp_men/content-provider": "^1.8.0",
     "@superapp_men/device-storage": "^1.0.0",
     "@superapp_men/speech-to-text": "^1.1.0",
     "@superapp_men/submit-assessment-results": "^1.0.11",

@@ -1,0 +1,279 @@
+{
+  "schemaVersion": 1,
+  "partnerCode": "poc",
+  "publishedAt": "2026-07-07T13:31:10.603Z",
+  "baseUrl": "https://github.com/AFIFIHishame-Z/partner-pwa",
+  "bundle": {
+    "platform": "android",
+    "channel": "stable",
+    "version": "1.0.0",
+    "url": "https://github.com/AFIFIHishame-Z/partner-pwa/releases/download/1.0.0/parttner-app-poc.zip",
+    "sha256": "0221f64aab7411774f81620cbbc390a731eb1a789c30db3bb170d3ffb52dc7a9",
+    "size": 24737676,
+    "minSuperAppVersion": "1.0.0"
+  },
+  "content": {
+    "baseUrl": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/content",
+    "grades": [
+      {
+        "grade": "1",
+        "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/content/1/content.json"
+      },
+      {
+        "grade": "2",
+        "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/content/2/content.json"
+      },
+      {
+        "grade": "3",
+        "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/content/3/content.json"
+      },
+      {
+        "grade": "4",
+        "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/content/4/content.json"
+      },
+      {
+        "grade": "5",
+        "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/content/5/content.json"
+      },
+      {
+        "grade": "6",
+        "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/content/6/content.json"
+      }
+    ]
+  },
+  "media": {
+    "baseUrl": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media",
+    "audio": {
+      "downloadWhen": "install",
+      "count": 378,
+      "files": [
+        "consignes/00e5b2a4-98c8-409e-9b68-d8eb397d4c78.mp3"
+      ]
+    },
+   "videos": {
+      "downloadWhen": "on-demand-per-palier",
+      "baseUrl": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos",
+      "count": 51,
+      "byPalier": {
+        "1": [
+          {
+            "name": "v1p1.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier1/v1p1.mp4"
+          },
+          {
+            "name": "v2p1.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier1/v2p1.mp4"
+          },
+          {
+            "name": "v3p1.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier1/v3p1.mp4"
+          },
+          {
+            "name": "v4p1.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier1/v4p1.mp4"
+          },
+          {
+            "name": "v5p1.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier1/v5p1.mp4"
+          },
+          {
+            "name": "v7p1.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier1/v7p1.mp4"
+          },
+          {
+            "name": "v8p1.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier1/v8p1.mp4"
+          }
+        ],
+        "2": [
+          {
+            "name": "v1p2.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier2/v1p2.mp4"
+          },
+          {
+            "name": "v2p2.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier2/v2p2.mp4"
+          },
+          {
+            "name": "v3p2.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier2/v3p2.mp4"
+          },
+          {
+            "name": "v4p2.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier2/v4p2.mp4"
+          },
+          {
+            "name": "v5p2.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier2/v5p2.mp4"
+          },
+          {
+            "name": "v6p2.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier2/v6p2.mp4"
+          },
+          {
+            "name": "v7p2.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier2/v7p2.mp4"
+          },
+          {
+            "name": "v8p2.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier2/v8p2.mp4"
+          },
+          {
+            "name": "v9p2.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier2/v9p2.mp4"
+          },
+          {
+            "name": "v10p2.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier2/v10p2.mp4"
+          },
+          {
+            "name": "v11p2.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier2/v11p2.mp4"
+          }
+        ],
+        "3": [
+          {
+            "name": "v1p3.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier3/v1p3.mp4"
+          },
+          {
+            "name": "v2p3.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier3/v2p3.mp4"
+          },
+          {
+            "name": "v3p3.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier3/v3p3.mp4"
+          },
+          {
+            "name": "v4p3.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier3/v4p3.mp4"
+          },
+          {
+            "name": "v5p3.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier3/v5p3.mp4"
+          }
+        ],
+        "4": [
+          {
+            "name": "v1p4.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier4/v1p4.mp4"
+          },
+          {
+            "name": "v2p4.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier4/v2p4.mp4"
+          },
+          {
+            "name": "v3p4.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier4/v3p4.mp4"
+          },
+          {
+            "name": "v4p4.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier4/v4p4.mp4"
+          },
+          {
+            "name": "v5p4.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier4/v5p4.mp4"
+          }
+        ],
+        "5": [
+          {
+            "name": "v1p5.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier5/v1p5.mp4"
+          },
+          {
+            "name": "v2p5.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier5/v2p5.mp4"
+          },
+          {
+            "name": "v3p5.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier5/v3p5.mp4"
+          },
+          {
+            "name": "v4p5.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier5/v4p5.mp4"
+          },
+          {
+            "name": "v5p5.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier5/v5p5.mp4"
+          },
+          {
+            "name": "v6p5.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier5/v6p5.mp4"
+          }
+        ],
+        "6": [
+          {
+            "name": "v1p6.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier6/v1p6.mp4"
+          },
+          {
+            "name": "v1p6b2.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier6/v1p6b2.mp4"
+          },
+          {
+            "name": "v2p6.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier6/v2p6.mp4"
+          },
+          {
+            "name": "v2p6b2.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier6/v2p6b2.mp4"
+          },
+          {
+            "name": "v3p6.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier6/v3p6.mp4"
+          },
+          {
+            "name": "v4p6.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier6/v4p6.mp4"
+          },
+          {
+            "name": "v4p6b2.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier6/v4p6b2.mp4"
+          },
+          {
+            "name": "v5p6.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier6/v5p6.mp4"
+          },
+          {
+            "name": "v6p6.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier6/v6p6.mp4"
+          }
+        ],
+        "7": [
+          {
+            "name": "v1p7.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier7/v1p7.mp4"
+          },
+          {
+            "name": "v2p7.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier7/v2p7.mp4"
+          },
+          {
+            "name": "v3p7.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier7/v3p7.mp4"
+          },
+          {
+            "name": "v4p7.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier7/v4p7.mp4"
+          },
+          {
+            "name": "v5p7.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier7/v5p7.mp4"
+          },
+          {
+            "name": "v6p7.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier7/v6p7.mp4"
+          },
+          {
+            "name": "v7p7.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier7/v7p7.mp4"
+          },
+          {
+            "name": "v8p7.mp4",
+            "url": "https://pub-ee032d5dd78a48918f45771dc126c434.r2.dev/Bewize/media/videos/palier7/v8p7.mp4"
+          }
+        ]
+      }
+    }
+  }
+}

@@ -1,4 +1,10 @@
 import "./App.css";
+import { ContentProviderTest } from "./components/ContentProviderTest";
+import { MediaProviderTest } from "./components/MediaProviderTest";
+import { BackgroundProviderTest } from "./components/BackgroundProviderTest";
+import { SoundProviderTest } from "./components/SoundProviderTest";
+import { RiveProviderTest } from "./components/RiveProviderTest";
+import { VideoProviderTest } from "./components/VideoProviderTest";
 import { DeviceStorageTest } from "./components/DeviceStorageTest";
 import { SpeechToTextExample } from "./components/SpeechToTextExample";
 import { TextToSpeechExample } from "./components/TextToSpeechExample";
@@ -59,6 +65,15 @@ function App() {
       >
         ← Retour à la Super App
       </button>
+      {/* ── Content Provider Package Tests ── */}
+      <ContentProviderTest />
+      <MediaProviderTest />
+      <BackgroundProviderTest />
+      <SoundProviderTest />
+      <RiveProviderTest />
+      <VideoProviderTest />
+
+      {/* ── Other package tests ── */}
       {/* <TestSpeechToTextPackage/> */}
       {/* <MyComponent /> */}
       <SpeechToTextExample />
