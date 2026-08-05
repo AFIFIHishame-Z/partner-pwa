@@ -76,7 +76,7 @@ export function VoiceRecorderCapacitorWithCheckpoints() {
   const [recorder] = useState(
     () =>
       new VoiceRecorder({
-        timeout: 10000,
+        timeout: 100000,
         debug: true,
       })
   );
