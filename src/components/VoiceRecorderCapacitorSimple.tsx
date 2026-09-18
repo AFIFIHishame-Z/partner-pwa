@@ -10,6 +10,7 @@ import {
   type StateChangeEvent,
   type ProgressEvent,
   type ErrorEvent,
+  type RecordingStoppedEvent,
 } from "@superapp_men/voice-recorder-capacitor";
 //ddd
 function decodeBase64ToBlob(base64: string, mimeType = "audio/wav"): Blob {
@@ -61,6 +62,10 @@ export function VoiceRecorderCapacitorSimple() {
     useState<RecordingLanguage>("fr");
   const [referenceText, setReferenceText] = useState("");
   const [expectedNumber, setExpectedNumber] = useState("12");
+  const [autoStopOnSilence, setAutoStopOnSilence] = useState(false);
+  const [silenceDurationMs, setSilenceDurationMs] = useState(1000);
+  const [silenceThreshold, setSilenceThreshold] = useState(0.02);
+  const [lastStopReason, setLastStopReason] = useState<"manual" | "silence" | null>(null);
 
   useEffect(() => {
     // Check availability on mount
@@ -86,10 +91,33 @@ console.log("test stateChange");
       setError(message);
     });
 
+    // Auto-stop-on-silence fires this event on its own, without a
+    // stopRecording() call — reason: "silence" is the only way to learn the
+    // recording already ended. A manual stop is already handled directly by
+    // handleStop() below, so this only reacts to the silence case.
+    const unsubStopped = recorder.on<RecordingStoppedEvent>(
+      "recordingStopped",
+      ({ result, reason }) => {
+        if (reason !== "silence") return;
+
+        console.log("recordingStopped (auto, silence):", result);
+        setLastStopReason("silence");
+
+        if (result.audioData) {
+          const audioBlob = decodeBase64ToBlob(result.audioData);
+          const url = URL.createObjectURL(audioBlob);
+          setDecodedBlobUrl(url);
+        }
+
+        setRecording(result);
+      }
+    );
+
     return () => {
       unsubState();
       unsubProgress();
       unsubError();
+      unsubStopped();
       recorder.destroy();
     };
   }, [recorder]);
@@ -118,6 +146,7 @@ console.log("test stateChange");
     try {
       setError(null);
       setRecording(null);
+      setLastStopReason(null);
 
       const trimmedReferenceText = referenceText.trim();
       if (selectedLanguage === "ar" && !trimmedReferenceText) {
@@ -159,6 +188,13 @@ console.log("test stateChange");
           bitDepth: 16,
           channels: 1, // Mono
         },
+        ...(autoStopOnSilence
+          ? {
+              autoStopOnSilence: true,
+              silenceDurationMs,
+              silenceThreshold,
+            }
+          : {}),
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "Échec du démarrage de l'enregistrement");
@@ -176,6 +212,7 @@ console.log("test stateChange");
         setDecodedBlobUrl(url);
       }
 
+      setLastStopReason("manual");
       setRecording(result);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Échec de l'arrêt de l'enregistrement");
@@ -315,6 +352,97 @@ console.log("test stateChange");
         </label>
       )}
 
+      <div
+        style={{
+          display: "grid",
+          gap: "8px",
+          marginBottom: "12px",
+          padding: "12px",
+          borderRadius: "8px",
+          background: "rgba(168,85,247,0.08)",
+          border: "1px solid rgba(168,85,247,0.25)",
+          maxWidth: "420px",
+        }}
+      >
+        <label
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: "8px",
+            fontSize: "0.9rem",
+            fontWeight: 600,
+            color: "#475569",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={autoStopOnSilence}
+            disabled={isRecording}
+            onChange={(event) => setAutoStopOnSilence(event.target.checked)}
+          />
+          Arrêt automatique sur silence (autoStopOnSilence)
+        </label>
+
+        {autoStopOnSilence && (
+          <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+            <label
+              style={{
+                display: "grid",
+                gap: "4px",
+                fontSize: "0.82rem",
+                color: "#475569",
+              }}
+            >
+              Durée de silence (ms)
+              <input
+                type="number"
+                min={200}
+                step={100}
+                disabled={isRecording}
+                value={silenceDurationMs}
+                onChange={(event) =>
+                  setSilenceDurationMs(Number(event.target.value) || 0)
+                }
+                style={{
+                  padding: "6px 8px",
+                  borderRadius: "6px",
+                  border: "1px solid rgba(168,85,247,0.3)",
+                  width: "120px",
+                }}
+              />
+            </label>
+
+            <label
+              style={{
+                display: "grid",
+                gap: "4px",
+                fontSize: "0.82rem",
+                color: "#475569",
+              }}
+            >
+              Seuil RMS de silence (0-1)
+              <input
+                type="number"
+                min={0}
+                max={1}
+                step={0.005}
+                disabled={isRecording}
+                value={silenceThreshold}
+                onChange={(event) =>
+                  setSilenceThreshold(Number(event.target.value) || 0)
+                }
+                style={{
+                  padding: "6px 8px",
+                  borderRadius: "6px",
+                  border: "1px solid rgba(168,85,247,0.3)",
+                  width: "120px",
+                }}
+              />
+            </label>
+          </div>
+        )}
+      </div>
+
       {error && (
         <div
           style={{
@@ -438,9 +566,31 @@ console.log("test stateChange");
               fontSize: "1.1rem",
               marginBottom: "12px",
               color: "#1e293b",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
             }}
           >
             Enregistrement terminé
+            {lastStopReason && (
+              <span
+                style={{
+                  fontSize: "0.75rem",
+                  fontWeight: 700,
+                  padding: "3px 10px",
+                  borderRadius: "999px",
+                  color: lastStopReason === "silence" ? "#7c3aed" : "#475569",
+                  background:
+                    lastStopReason === "silence"
+                      ? "rgba(168,85,247,0.15)"
+                      : "rgba(100,116,139,0.12)",
+                }}
+              >
+                {lastStopReason === "silence"
+                  ? "🔇 Arrêt auto (silence)"
+                  : "🛑 Arrêt manuel"}
+              </span>
+            )}
           </h3>
           <AiResultPanel
             title="Résultat IA final"
